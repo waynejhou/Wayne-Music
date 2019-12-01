@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Audio Only Page</title>
+</head>
+
+<body>
+    <script type="text/javascript">
+        //requires libs
+        const {
+            ipcRenderer,
+            remote
+        } = require('electron')
+        const ipcChannels = remote.require('./electron-channel-names')
+        var {
+            Howl,
+            Howler
+        } = require('howler');
+        const indexContents = remote.getGlobal('win').webContents
+
+        //definitions
+        const EMPTY_AUDIO_DATA = {
+            album: null,
+            albumartist: null,
+            artist: null,
+            artists: [],
+            comment: [],
+            date: null,
+            disk: {
+                no: null,
+                of: null
+            },
+            genre: [],
+            picture: "img/Ellipses.png",
+            title: null,
+            track: {
+                no: 1,
+                of: 4
+            },
+            url: null,
+            year: 2017,
+        }
+        const PlaybackStateEnum = {
+            playing: 'playing', paused: 'paused', stopped: 'stopped'
+        }
+        Object.freeze(PlaybackStateEnum)
+        var _audio = null;
+        const audioStateManager = {
+            _current: null,
+            get current() {
+                if (!audioStateManager._current) return EMPTY_AUDIO_DATA;
+                return audioStateManager._current;
+            },
+            set current(value) {
+                audioStateManager._current = value;
+                if (_audio) {
+                    _audio.unload();
+                    _audio = null;
+                }
+                let tempAudio = new Howl({
+                    src: [value.url],
+                    volume: 0.25,
+                    loop: true
+                })
+                tempAudio.once('load', () => {
+                    _audio = tempAudio
+                    audioStateManager.playbackState = PlaybackStateEnum.playing
+                    console.log(
+                        `[ipcRenderer send {audioStateManager.current: ${audioStateManager.current.url}}` +
+                        " to {index}" +
+                        " on channel: {ipcChannels.audio_onload}]")
+                    indexContents.send(ipcChannels.respond_current, audioStateManager.current)
+                })
+                tempAudio.on('end', () => {
+                    if (!audioStateManager.loop) {
+                        audioStateManager.playbackState = PlaybackStateEnum.stopped;
+                    }
+                })
+            },
+            _playbackState: 'stopped',
+            get playbackState() {
+                return audioStateManager._playbackState;
+            },
+            set playbackState(value) {
+                if (!_audio) return;
+                if (!(value in PlaybackStateEnum)) return;
+                audioStateManager._playbackState = value;
+                if (value == PlaybackStateEnum.playing) {
+                    _audio.play()
+                }
+                if (value == PlaybackStateEnum.paused) {
+                    _audio.pause()
+                }
+                if (value == PlaybackStateEnum.stopped) {
+                    _audio.stop()
+                }
+                console.log(
+                    `[ipcRenderer send {audioStateManager.playbackState: ${audioStateManager.playbackState}}` +
+                    " to {index}" +
+                    " on channel: {ipcChannels.respond_playbackState}]")
+                indexContents.send(ipcChannels.respond_playbackState, audioStateManager.playbackState)
+            },
+            _loop: false,
+            get loop() {
+                return audioStateManager._loop;
+            },
+            set loop(value) {
+                audioStateManager._loop = !!value;
+                if (_audio) { _audio.loop(!!value); }
+                console.log(
+                    `[ipcRenderer send {audioStateManager.loop: ${audioStateManager.loop}}` +
+                    " to {index}" +
+                    " on channel: {ipcChannels.respond_loop}]")
+                indexContents.send(ipcChannels.respond_loop, audioStateManager.loop)
+            },
+            _volume: 0.25,
+            _mute: false,
+        }
+
+        ipcRenderer.on(ipcChannels.audio_change_src, (e, audio_data) => {
+            console.log(
+                `[Got {audio_data: "${audio_data.url}"}` +
+                " from {icpMain}" +
+                " at channel: {ipcChannels.audio_change_src}]")
+            let data = audio_data
+            console.log(data)
+            audioStateManager.current = data
+        });
+
+        ipcRenderer.on(ipcChannels.query_playbackState, (e) => {
+            console.log(
+                "[Got {}" +
+                " from {index}" +
+                " at channel: {ipcChannels.query_playbackState}]")
+            console.log(
+                "[ipcRenderer send {audioStateManager.playbackState}" +
+                " to {index}" +
+                " on channel: {ipcChannels.respond_playbackState}]")
+            indexContents.send(ipcChannels.respond_playbackState, audioStateManager.playbackState)
+        });
+
+        ipcRenderer.on(ipcChannels.query_current, (e) => {
+            console.log(
+                "[Got {}" +
+                " from {index}" +
+                " at channel: {ipcChannels.query_current}]")
+            console.log(
+                "[ipcRenderer send {audioStateManager.current}" +
+                " to {index}" +
+                " on channel: {ipcChannels.respond_current}]")
+            indexContents.send(ipcChannels.respond_current, audioStateManager.current)
+        });
+        ipcRenderer.on(ipcChannels.query_seek, (e) => {
+            /*
+            console.log(
+                "[Got {}" +
+                " from {index}" +
+                " at channel: {ipcChannels.query_seek}]")
+            if(!_audio)return
+            console.log(
+                "[ipcRenderer send {_audio.seek()}" +
+                " to {index}" +
+                " on channel: {ipcChannels.respond_seek}]")
+            */
+            if (!_audio) return
+            indexContents.send(ipcChannels.respond_seek, _audio.seek())
+        });
+        ipcRenderer.on(ipcChannels.query_loop, (e) => {
+            console.log(
+                "[Got {}" +
+                " from {index}" +
+                " at channel: {ipcChannels.query_loop}]")
+            console.log(
+                "[ipcRenderer send {audioStateManager.loop}" +
+                " to {index}" +
+                " on channel: {ipcChannels.respond_loop}]")
+            indexContents.send(ipcChannels.respond_loop, audioStateManager.loop)
+        });
+
+        ipcRenderer.on(ipcChannels.audio_remote_play, (e) => {
+            console.log(
+                "[Got {}" +
+                " from {index}" +
+                " at channel: {ipcChannels.audio_remote_play}]")
+            audioStateManager.playbackState = PlaybackStateEnum.playing
+        })
+        ipcRenderer.on(ipcChannels.audio_remote_pause, (e) => {
+            console.log(
+                "[Got {}" +
+                " from {index}" +
+                " at channel: {ipcChannels.audio_remote_pause}]")
+            audioStateManager.playbackState = PlaybackStateEnum.paused
+        })
+        ipcRenderer.on(ipcChannels.audio_remote_seek, (e, seek) => {
+            console.log(
+                `[Got {seek: ${seek}}` +
+                " from {index}" +
+                " at channel: {ipcChannels.audio_remote_seek}]")
+            if (_audio) { _audio.seek(seek) }
+        })
+
+        ipcRenderer.on(ipcChannels.audio_remote_loop, (e, loop) => {
+            console.log(
+                `[Got {loop: ${loop}}` +
+                " from {index}" +
+                " at channel: {ipcChannels.audio_remote_loop}]")
+            audioStateManager.loop = loop
+        })
+    </script>
+</body>
+
+</html>

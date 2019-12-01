@@ -1,0 +1,40 @@
+{
+  "name": "wayne-music-electron",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "Wayne Jhou",
+  "devDependencies": {
+    "electron": "^7.1.2",
+    "electron-builder": "^21.2.0",
+    "electron-rebuild": "^1.8.8"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "howler": "^2.1.2",
+    "jquery": "^3.4.1",
+    "mousetrap": "^1.6.3",
+    "music-metadata": "^5.0.1"
+  },
+  "build": {
+    "appId": "wayne.music",
+    "productName": "electron-build",
+    "files": [
+      "src/views/*",
+      "src/views/**/*",
+      "src/www/*",
+      "src/www/**/*",
+      "*src/*.js"
+    ],
+    "directories": {
+      "output": "build"
+    },
+    "win": {
+      "target": "dir"
+    }
+  }
+}

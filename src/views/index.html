@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Wayne Music</title>
+    <script type='text/javascript'>
+        window.jQuery = window.$ = require('jquery');
+    </script>
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <link rel="stylesheet" href="fontawesome-free-5.11.2-web/css/all.css">
+</head>
+
+<body>
+    <div id="root-container">
+        <div id="left-side-dock" class="card layer-transparent">
+            <button id="page-changing-cover" class="plain sqr1"><i class="fas fa-image"></i></button>
+            <button id="page-changing-list" class="plain sqr1"><i class="fas fa-list"></i></button>
+        </div>
+        <div id="bottom-side-dock" class="card layer-transparent">
+            <div id="audio-controls-container">
+                <div id="audio-controls-metadata" class="card">
+                    <div id="metadata-title" class="metadata-h1">Title</div>
+                    <div id="metadata-album" class="metadata-h2">Album</div>
+                </div>
+                <div id="audio-controls" class="card layer-transparent">
+                    <div id="audio-controls-btns" class="card">
+                        <button id="audio-controls-playpause-btn" class="plain sqr1">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button id="audio-controls-lastone-btn" class="plain sqr2">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button id="audio-controls-nextone-btn" class="plain sqr2">
+                            <i class="fas fa-step-forward"></i></i>
+                        </button>
+                        <button id="audio-controls-random-btn" class="plain sqr3">
+                            <i class="fas fa-random"></i>
+                        </button>
+                        <button id="audio-controls-repeat-btn" class="plain sqr3">
+                            <div id="repeat-btn-icon-layout">
+                                <i id="repeat-btn-icon" class="unicode-symbol">&#x2B8C;</i>
+                                <span id="repeat-btn-addition">1</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div id="audio-controls-slider-container" class="card">
+                        <input type="range" id="audio-controls-slider" min="0" max="1000" value="25"></input>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div id="body-container" class="card layer-transparent">
+        </div>
+    </div>
+
+
+    <script type='text/javascript'>
+        //require libs
+        const {
+            ipcRenderer,
+            remote
+        } = require('electron')
+        const ipcChannels = remote.require('./electron-channel-names')
+        const Mousetrap = require('mousetrap');
+        const audioContents = remote.getGlobal('bgWorker').webContents
+        Mousetrap.bind('mod+r', () => {
+            remote.getCurrentWindow().reload()
+            remote.getCurrentWebContents().openDevTools()
+        });
+
+        function updateBottomInfo(data) {
+            if (data.title) {
+                $('head title').html(`${data.title} - Wayne Music`)
+            } else {
+                $('head title').html(`Wayne Music`)
+            }
+
+            $('#metadata-title').html(data.title)
+            $('#metadata-album').html(data.album)
+        };
+
+        function updateCover(data) {
+            $('img#metadata-cover').attr('src', data.picture)
+            $('div.cover-background').css({
+                "background": `url(${data.picture})`,
+                "background-size": "contain",
+                "background-position": "center",
+                "filter": "blur(25px)",
+            })
+        }
+
+        function updateControlsBtn(playbackState) {
+            if (playbackState == 'playing') {
+                $("#audio-controls-playpause-btn").html('<i class="fas fa-pause"></i>')
+            } else {
+                $("#audio-controls-playpause-btn").html('<i class="fas fa-play"></i>')
+            };
+        }
+        let slider_is_mouse_down = false;
+        function updateSliderPos(seek) {
+            if (slider_is_mouse_down) return;
+            $('input[type="range"]#audio-controls-slider').each((_, slider) => {
+                slider.value = seek * slider.max / respondedCurrent.duration
+            });
+        }
+
+        function updateRepeatBtn(loopState) {
+            if (loopState) {
+                $('#audio-controls-repeat-btn').html(
+                    '<div id="repeat-btn-icon-layout">' +
+                    '    <i id="repeat-btn-icon" class="unicode-symbol">&#x2B8C;</i>' +
+                    '    <span id="repeat-btn-addition">1</span>' +
+                    '</div>'
+                )
+            } else {
+                $('#audio-controls-repeat-btn').html(
+                    '<i class="unicode-symbol">&#x2B8C;</i>'
+                )
+            }
+        }
+
+        ipcRenderer.on(ipcChannels.audio_onload, (e, audio_data) => {
+            console.log(
+                `[Got {audio_data: "${audio_data.url}"}` +
+                " from {audio}" +
+                " at channel: {ipcChannels.audio_onload}]")
+            console.log(audio_data)
+            updateBottomInfo(audio_data);
+            updateCover(audio_data);
+        });
+
+        let respond_playbackState_callback = null;
+        let respondedPlaybackState = null;
+        ipcRenderer.on(ipcChannels.respond_playbackState, (e, playbackState) => {
+            console.log(
+                `[Got {playbackState: ${playbackState}}` +
+                " from {audio}" +
+                " at channel: {ipcChannels.respond_playbackState}]")
+            respondedPlaybackState = playbackState;
+            updateControlsBtn(playbackState)
+            if (respond_playbackState_callback) {
+                console.log(respond_playbackState_callback)
+                respond_playbackState_callback(respondedPlaybackState);
+            }
+            respond_playbackState_callback = null;
+
+        })
+
+        let respond_current_callback = null;
+        let respondedCurrent = null;
+        ipcRenderer.on(ipcChannels.respond_current, (e, audio_data) => {
+            console.log(
+                `[Got {audio_data: "${audio_data.url}"}` +
+                " from {audio}" +
+                " at channel: {ipcChannels.respond_current}]")
+            console.log(audio_data)
+            respondedCurrent = audio_data
+            updateCover(audio_data)
+            updateBottomInfo(audio_data)
+            if (respond_current_callback) {
+                console.log(respond_current_callback)
+                respond_current_callback(respondedCurrent);
+            }
+            respond_current_callback = null;
+        })
+
+        let respond_seek_callback = null;
+        let respondedSeek = null;
+        ipcRenderer.on(ipcChannels.respond_seek, (e, seek) => {
+            /*
+            console.log(
+                "[Got {seek}" +
+                " from {audio}" +
+                " at channel: {ipcChannels.respond_seek}]")
+            console.log(seek)*/
+            respondedSeek = seek
+            updateSliderPos(seek)
+            if (respond_seek_callback) {
+                console.log(respond_seek_callback)
+                respond_seek_callback(respondedSeek);
+            }
+            respond_seek_callback = null;
+        })
+
+        let respond_loop_callback = null;
+        let respondedLoop = null;
+        ipcRenderer.on(ipcChannels.respond_loop, (e, loop) => {
+            console.log(
+                `[Got {loop: ${loop}}` +
+                " from {audio}" +
+                " at channel: {ipcChannels.respond_loop}]")
+            respondedLoop = loop
+            updateRepeatBtn(loop)
+            if (respond_loop_callback) {
+                console.log(respond_loop_callback)
+                respond_loop_callback(respondedLoop);
+            }
+            respond_loop_callback = null;
+        })
+        //load initial page
+
+        $().ready(() => {
+            $('#body-container').load('cover')
+            console.log(
+                "[ipcRenderer send {}" +
+                " to {audio}" +
+                " on channel: {ipcChannels.query_current}]")
+            audioContents.send(ipcChannels.query_current, null)
+            console.log(
+                "[ipcRenderer send {}" +
+                " to {audio}" +
+                " on channel: {ipcChannels.query_playbackState}]")
+            audioContents.send(ipcChannels.query_playbackState, null)
+            console.log(
+                "[ipcRenderer send {}" +
+                " to {audio}" +
+                " on channel: {ipcChannels.query_loop}]")
+            audioContents.send(ipcChannels.query_loop)
+        })
+
+
+        {
+            // slider related Callbacks
+            let slider_temp_value = 0;
+            window.setInterval(() => {
+                if (respondedPlaybackState != 'playing') return
+                /*
+                console.log(
+                    "[ipcRenderer send {}" +
+                    " to {audio}" +
+                    " on channel: {ipcChannels.query_seek}]")
+                    */
+                audioContents.send(ipcChannels.query_seek)
+            }, 33);
+            $('input[type="range"]#audio-controls-slider').on('mousedown', (e) => {
+                let slider = e.currentTarget
+                slider_is_mouse_down = true
+            })
+            $('input[type="range"]#audio-controls-slider').on('input change', (e) => {
+                let slider = e.currentTarget
+                slider_temp_value = slider.value
+            })
+            $('input[type="range"]#audio-controls-slider').on('mouseup', (e) => {
+                let slider = e.currentTarget
+                slider_is_mouse_down = false;
+                let seeked_value = respondedCurrent.duration * slider_temp_value / slider.max;
+                console.log(
+                    `[ipcRenderer send {seeked_value: ${seeked_value}}` +
+                    " to {audio}" +
+                    " on channel: {ipcChannels.audio_remote_seek}]")
+                audioContents.send(ipcChannels.audio_remote_seek, seeked_value);
+
+            })
+
+            // left-side page-changing-button Callbacks
+            $('button#page-changing-cover').click(() => {
+                $('#body-container').load('cover')
+            })
+            $('button#page-changing-list').click(() => {
+                $('#body-container').load('list')
+            })
+            $('#audio-controls-playpause-btn').click(() => {
+                if (respondedPlaybackState == 'playing') {
+                    console.log(
+                        "[ipcRenderer send {}" +
+                        " to {audio}" +
+                        " on channel: {ipcChannels.audio_remote_pause}]")
+                    audioContents.send(ipcChannels.audio_remote_pause)
+                }
+                else {
+                    console.log(
+                        "[ipcRenderer send {}" +
+                        " to {audio}" +
+                        " on channel: {ipcChannels.audio_remote_play}]")
+                    audioContents.send(ipcChannels.audio_remote_play)
+                }
+            });
+
+            $('#audio-controls-repeat-btn').click(() => {
+                let loop = !respondedLoop
+                console.log(
+                        `[ipcRenderer send {loop: ${loop}}` +
+                        " to {audio}" +
+                        " on channel: {ipcChannels.audio_remote_loop}]")
+                audioContents.send(ipcChannels.audio_remote_loop, loop)
+            });
+        }
+
+    </script>
+</body>
+
+</html>
