@@ -18,7 +18,8 @@
     "howler": "^2.1.2",
     "jquery": "^3.4.1",
     "mousetrap": "^1.6.3",
-    "music-metadata": "^5.0.1"
+    "music-metadata": "^5.0.1",
+    "ws": "^7.2.0"
   },
   "build": {
     "appId": "wayne.music",

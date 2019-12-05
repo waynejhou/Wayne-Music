@@ -1,10 +1,10 @@
-const { app, BrowserWindow, dialog, Menu, globalShortcut } = require('electron')
+const { app, BrowserWindow, dialog, Menu, ipcMain } = require('electron')
 const mm = require('music-metadata');
 const url = require('url');
 
 const view = require('./viewServer')
 const base64 = require('./base64')
-ipcChannels = require('./electron-channel-names')
+const ipcChannels = require('./ipcChannels')
 
 
 
@@ -33,7 +33,6 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
-            devTools: false,
         }
     })
     bgWorker.on('read-to-show',()=>{
@@ -42,9 +41,9 @@ function createWindow() {
     // bgWorker 讀取頁面
     bgWorker.loadURL(`http://localhost:${port}/audio`)
     // bgWorker 開啟獨立(因為沒有視窗依附)開發視窗
-    //bgWorker.webContents.openDevTools({
-        //mode : "detach"
-    //})
+    bgWorker.webContents.openDevTools({
+        mode : "detach"
+    })
 
 
     // 建立瀏覽器視窗。
@@ -56,7 +55,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
-            devTools: false,
+            //devTools: false,
         }
     })
 
@@ -100,7 +99,9 @@ function createWindow() {
                             filters: [newFileFilter('Audio', ['flac', 'mp3'])],
                             title: "Open Audio"
                         }).then((result) => {
-                            if (result.length <= 0) return;
+                            console.log(result)
+                            console.log(result.filePaths)
+                            if (result.filePaths.length < 0) return;
                             mm.parseFile(result.filePaths[0], { skipPostHeaders: true })
                                 .then(metadata => {
                                     let audio_data = ((metadata, fileName) => {
@@ -110,7 +111,7 @@ function createWindow() {
                                         if (!data.artist) data.artist = "Unknown Artist"
                                         if (!data.title) data.title = path.basename(data.fileName)
                                         if (!data.album) data.album = "Unknown Album"
-                                        if (data.picture.length > 0) {
+                                        if (data.picture) {
                                             data.picture = `data:${data.picture[0].format};base64,${base64.bytesToBase64(data.picture[0].data)}`
                                         } else data.picture = "img/Ellipses.png";
                                         return data;
@@ -163,3 +164,4 @@ app.on('activate', () => {
 
 // 你可以在這個檔案中繼續寫應用程式主程序要執行的程式碼。 
 // 你也可以將它們放在別的檔案裡，再由這裡 require 進來。
+

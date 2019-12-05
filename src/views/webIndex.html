@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Wayne Music</title>
+    <script type='text/javascript' src="js/jquery-3.4.1.min.js"></script>
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <link rel="stylesheet" href="fontawesome-free-5.11.2-web/css/all.css">
+</head>
+
+<body>
+    <div id="root-container">
+        <div id="left-side-dock" class="card layer-transparent">
+            <button id="page-changing-cover" class="plain sqr1"><i class="fas fa-image"></i></button>
+            <button id="page-changing-list" class="plain sqr1"><i class="fas fa-list"></i></button>
+            <button id="page-changing-lyric" class="plain sqr1"><i class="fas fa-align-left"></i></button>
+        </div>
+        <div id="bottom-side-dock" class="card layer-transparent">
+            <div id="audio-controls-container">
+                <div id="audio-controls-metadata" class="card">
+                    <div id="metadata-title" class="metadata-h1">Title</div>
+                    <div id="metadata-album" class="metadata-h2">Album</div>
+                </div>
+                <div id="audio-controls" class="card layer-transparent">
+                    <div id="audio-controls-btns" class="card">
+                        <button id="audio-controls-playpause-btn" class="plain sqr1">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button id="audio-controls-lastone-btn" class="plain sqr2">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button id="audio-controls-nextone-btn" class="plain sqr2">
+                            <i class="fas fa-step-forward"></i></i>
+                        </button>
+                        <button id="audio-controls-random-btn" class="plain sqr3">
+                            <i class="fas fa-random"></i>
+                        </button>
+                        <button id="audio-controls-repeat-btn" class="plain sqr3">
+                            <div id="repeat-btn-icon-layout">
+                                <i id="repeat-btn-icon" class="unicode-symbol">&#x2B8C;</i>
+                                <span id="repeat-btn-addition">1</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div id="audio-controls-slider-container" class="card">
+                        <input type="range" id="audio-controls-slider" min="0" max="1000" value="25"></input>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div id="body-container" class="card layer-transparent">
+        </div>
+        <script type="text/javascript">
+
+        </script>
+    </div>

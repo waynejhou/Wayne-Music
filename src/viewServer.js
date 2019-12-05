@@ -18,12 +18,11 @@ function init(electronApp){
 
     console.log(VIEWPATH)
     console.log(STATICPATH)
-
     app.get('/', function (req, res) {
         res.sendFile(path.join(VIEWPATH, 'index.html'));
     });
-    app.get('/index', function (req, res) {
-        res.sendFile(path.join(VIEWPATH, 'index.html'));
+    app.get('/web', function (req, res) {
+        res.sendFile(path.join(VIEWPATH, 'webIndex.html'));
     });
     app.get('/audio', function (req, res) {
         res.sendFile(path.join(VIEWPATH, 'audio.html'));
