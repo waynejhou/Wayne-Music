@@ -53,7 +53,21 @@
         </div>
         <div id="body-container" class="card layer-transparent">
         </div>
+        <script type='text/javascript' src='dist/Index.js'></script>
         <script type="text/javascript">
+            onRespondCurrent = (data) => {
+                updateBottomInfo(data)
+            }
+            function updateBottomInfo(data) {
+                if (data.title) {
+                    $('head title').html(`${data.title} - Wayne Music`)
+                } else {
+                    $('head title').html(`Wayne Music`)
+                }
+
+                $('#metadata-title').html(data.title)
+                $('#metadata-album').html(data.album)
+            };
 
         </script>
     </div>

@@ -56,23 +56,11 @@
         <div id="body-container" class="card layer-transparent">
         </div>
     </div>
-
-
+    <script type='text/javascript' src='dist/Index.js'></script>
     <script type='text/javascript'>
-        //require libs
-        const {
-            ipcRenderer,
-            remote
-        } = require('electron')
-        const ipcChannels = remote.require('./ipcChannels')
-        
-        const Mousetrap = require('mousetrap');
-        const audioContents = remote.getGlobal('bgWorker').webContents
-        Mousetrap.bind('mod+r', () => {
-            remote.getCurrentWindow().reload()
-            remote.getCurrentWebContents().openDevTools()
-        });
-
+        onRespondCurrent = (data)=>{
+            updateBottomInfo(data)
+        }
         function updateBottomInfo(data) {
             if (data.title) {
                 $('head title').html(`${data.title} - Wayne Music`)
@@ -101,7 +89,8 @@
                 $("#audio-controls-playpause-btn").html('<i class="fas fa-play"></i>')
             };
         }
-        let slider_is_mouse_down = false;
+
+        
         function updateSliderPos(seek) {
             if (slider_is_mouse_down) return;
             $('input[type="range"]#audio-controls-slider').each((_, slider) => {
@@ -124,119 +113,14 @@
             }
         }
 
-        ipcRenderer.on(ipcChannels.audio_onload, (e, audio_data) => {
-            console.log(
-                `[Got {audio_data: "${audio_data.url}"}` +
-                " from {audio}" +
-                " at channel: {ipcChannels.audio_onload}]")
-            console.log(audio_data)
-            updateBottomInfo(audio_data);
-            updateCover(audio_data);
-        });
-
-        let respond_playbackState_callback = null;
-        let respondedPlaybackState = null;
-        ipcRenderer.on(ipcChannels.respond_playbackState, (e, playbackState) => {
-            console.log(
-                `[Got {playbackState: ${playbackState}}` +
-                " from {audio}" +
-                " at channel: {ipcChannels.respond_playbackState}]")
-            respondedPlaybackState = playbackState;
-            updateControlsBtn(playbackState)
-            if (respond_playbackState_callback) {
-                console.log(respond_playbackState_callback)
-                respond_playbackState_callback(respondedPlaybackState);
-            }
-            respond_playbackState_callback = null;
-
-        })
-
-        let respond_current_callback = null;
-        let respondedCurrent = null;
-        ipcRenderer.on(ipcChannels.respond_current, (e, audio_data) => {
-            console.log(
-                `[Got {audio_data: "${audio_data.url}"}` +
-                " from {audio}" +
-                " at channel: {ipcChannels.respond_current}]")
-            console.log(audio_data)
-            respondedCurrent = audio_data
-            updateCover(audio_data)
-            updateBottomInfo(audio_data)
-            if (respond_current_callback) {
-                console.log(respond_current_callback)
-                respond_current_callback(respondedCurrent);
-            }
-            respond_current_callback = null;
-        })
-
-        let respond_seek_callback = null;
-        let respondedSeek = null;
-        ipcRenderer.on(ipcChannels.respond_seek, (e, seek) => {
-            /*
-            console.log(
-                "[Got {seek}" +
-                " from {audio}" +
-                " at channel: {ipcChannels.respond_seek}]")
-            console.log(seek)*/
-            respondedSeek = seek
-            updateSliderPos(seek)
-            if (respond_seek_callback) {
-                console.log(respond_seek_callback)
-                respond_seek_callback(respondedSeek);
-            }
-            respond_seek_callback = null;
-        })
-
-        let respond_loop_callback = null;
-        let respondedLoop = null;
-        ipcRenderer.on(ipcChannels.respond_loop, (e, loop) => {
-            console.log(
-                `[Got {loop: ${loop}}` +
-                " from {audio}" +
-                " at channel: {ipcChannels.respond_loop}]")
-            respondedLoop = loop
-            updateRepeatBtn(loop)
-            if (respond_loop_callback) {
-                console.log(respond_loop_callback)
-                respond_loop_callback(respondedLoop);
-            }
-            respond_loop_callback = null;
-        })
-        //load initial page
-
-        $().ready(() => {
-            $('#body-container').load('cover')
-            console.log(
-                "[ipcRenderer send {}" +
-                " to {audio}" +
-                " on channel: {ipcChannels.query_current}]")
-            audioContents.send(ipcChannels.query_current, null)
-            console.log(
-                "[ipcRenderer send {}" +
-                " to {audio}" +
-                " on channel: {ipcChannels.query_playbackState}]")
-            audioContents.send(ipcChannels.query_playbackState, null)
-            console.log(
-                "[ipcRenderer send {}" +
-                " to {audio}" +
-                " on channel: {ipcChannels.query_loop}]")
-            audioContents.send(ipcChannels.query_loop)
-        })
-
-
+   
         {
             // slider related Callbacks
-            let slider_temp_value = 0;
-            window.setInterval(() => {
+            //let slider_temp_value = 0;
+            /*window.setInterval(() => {
                 if (respondedPlaybackState != 'playing') return
-                /*
-                console.log(
-                    "[ipcRenderer send {}" +
-                    " to {audio}" +
-                    " on channel: {ipcChannels.query_seek}]")
-                    */
-                audioContents.send(ipcChannels.query_seek)
-            }, 33);
+                //audioContents.send(ipcChannels.query_seek)
+            }, 33);*/
             $('input[type="range"]#audio-controls-slider').on('mousedown', (e) => {
                 let slider = e.currentTarget
                 slider_is_mouse_down = true
@@ -253,7 +137,7 @@
                     `[ipcRenderer send {seeked_value: ${seeked_value}}` +
                     " to {audio}" +
                     " on channel: {ipcChannels.audio_remote_seek}]")
-                audioContents.send(ipcChannels.audio_remote_seek, seeked_value);
+                //audioContents.send(ipcChannels.audio_remote_seek, seeked_value);
 
             })
 
@@ -270,14 +154,14 @@
                         "[ipcRenderer send {}" +
                         " to {audio}" +
                         " on channel: {ipcChannels.audio_remote_pause}]")
-                    audioContents.send(ipcChannels.audio_remote_pause)
+                    //audioContents.send(ipcChannels.audio_remote_pause)
                 }
                 else {
                     console.log(
                         "[ipcRenderer send {}" +
                         " to {audio}" +
                         " on channel: {ipcChannels.audio_remote_play}]")
-                    audioContents.send(ipcChannels.audio_remote_play)
+                    //audioContents.send(ipcChannels.audio_remote_play)
                 }
             });
 
@@ -287,10 +171,9 @@
                         `[ipcRenderer send {loop: ${loop}}` +
                         " to {audio}" +
                         " on channel: {ipcChannels.audio_remote_loop}]")
-                audioContents.send(ipcChannels.audio_remote_loop, loop)
+                //audioContents.send(ipcChannels.audio_remote_loop, loop)
             });
         }
-
     </script>
 </body>
 
