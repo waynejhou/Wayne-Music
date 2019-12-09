@@ -14,6 +14,8 @@ declare class AudioData{
 
     public disk: { no: number, of: number }
 
+    public duration: number;
+
     public genre: string
 
     public picture: string

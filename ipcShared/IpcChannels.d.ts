@@ -10,7 +10,8 @@ export enum IpcChannels {
     audio_respond_current = "audio-respond-Current",
 
     // playback channels
-    audio_remote_playbackState = "audio-remote-PlaybackState",
+    audio_remote_play = "audio-remote-Play",
+    audio_remote_pause = "audio-remote-Pause",
     audio_query_playbackState = "audio-query-PlaybackState",
     audio_respond_playbackState = "audio-respond-PlaybackState",
     // seek channels

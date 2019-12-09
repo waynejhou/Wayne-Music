@@ -58,9 +58,8 @@
     </div>
     <script type='text/javascript' src='dist/Index.js'></script>
     <script type='text/javascript'>
-        onRespondCurrent = (data)=>{
-            updateBottomInfo(data)
-        }
+
+
         function updateBottomInfo(data) {
             if (data.title) {
                 $('head title').html(`${data.title} - Wayne Music`)
@@ -90,11 +89,11 @@
             };
         }
 
-        
+        let slider_is_mouse_down = false;
         function updateSliderPos(seek) {
             if (slider_is_mouse_down) return;
             $('input[type="range"]#audio-controls-slider').each((_, slider) => {
-                slider.value = seek * slider.max / respondedCurrent.duration
+                slider.value = seek * slider.max / Responds["Current"].duration
             });
         }
 
@@ -113,67 +112,63 @@
             }
         }
 
-   
-        {
-            // slider related Callbacks
-            //let slider_temp_value = 0;
-            /*window.setInterval(() => {
-                if (respondedPlaybackState != 'playing') return
-                //audioContents.send(ipcChannels.query_seek)
-            }, 33);*/
-            $('input[type="range"]#audio-controls-slider').on('mousedown', (e) => {
-                let slider = e.currentTarget
-                slider_is_mouse_down = true
-            })
-            $('input[type="range"]#audio-controls-slider').on('input change', (e) => {
-                let slider = e.currentTarget
-                slider_temp_value = slider.value
-            })
-            $('input[type="range"]#audio-controls-slider').on('mouseup', (e) => {
-                let slider = e.currentTarget
-                slider_is_mouse_down = false;
-                let seeked_value = respondedCurrent.duration * slider_temp_value / slider.max;
-                console.log(
-                    `[ipcRenderer send {seeked_value: ${seeked_value}}` +
-                    " to {audio}" +
-                    " on channel: {ipcChannels.audio_remote_seek}]")
-                //audioContents.send(ipcChannels.audio_remote_seek, seeked_value);
-
-            })
-
-            // left-side page-changing-button Callbacks
-            $('button#page-changing-cover').click(() => {
-                $('#body-container').load('cover')
-            })
-            $('button#page-changing-list').click(() => {
-                $('#body-container').load('list')
-            })
-            $('#audio-controls-playpause-btn').click(() => {
-                if (respondedPlaybackState == 'playing') {
-                    console.log(
-                        "[ipcRenderer send {}" +
-                        " to {audio}" +
-                        " on channel: {ipcChannels.audio_remote_pause}]")
-                    //audioContents.send(ipcChannels.audio_remote_pause)
-                }
-                else {
-                    console.log(
-                        "[ipcRenderer send {}" +
-                        " to {audio}" +
-                        " on channel: {ipcChannels.audio_remote_play}]")
-                    //audioContents.send(ipcChannels.audio_remote_play)
-                }
-            });
-
-            $('#audio-controls-repeat-btn').click(() => {
-                let loop = !respondedLoop
-                console.log(
-                        `[ipcRenderer send {loop: ${loop}}` +
-                        " to {audio}" +
-                        " on channel: {ipcChannels.audio_remote_loop}]")
-                //audioContents.send(ipcChannels.audio_remote_loop, loop)
-            });
+        OnResponds["Current"] = (data) => {
+            updateBottomInfo(data)
+            updateCover(data)
         }
+        OnResponds["PlaybackState"] = (data) => {
+            updateControlsBtn(data)
+        }
+        OnResponds["Loop"] = (data) => {
+            updateRepeatBtn(data)
+        }
+        OnResponds["Seek"] = (data) => {
+            updateSliderPos(data)
+        }
+
+        $('#audio-controls-playpause-btn').click(() => {
+            if (Responds["PlaybackState"] == 'playing') {
+                SendAudioRemote("PlaybackState", 'paused')
+            }
+            else {
+                SendAudioRemote("PlaybackState", 'playing')
+            }
+        });
+        $('#audio-controls-repeat-btn').click(() => {
+            let loop = !Responds["Loop"]
+            SendAudioRemote("Loop", loop)
+        });
+
+        // slider related Callbacks
+        //let slider_temp_value = 0;
+        window.setInterval(() => {
+            if (Responds["PlaybackState"] != 'playing') return
+            SendAudioQuery("Seek")
+        }, 33);
+        $('input[type="range"]#audio-controls-slider').on('mousedown', (e) => {
+            let slider = e.currentTarget
+            slider_is_mouse_down = true
+        })
+        $('input[type="range"]#audio-controls-slider').on('input change', (e) => {
+            let slider = e.currentTarget
+            slider_temp_value = slider.value
+        })
+        $('input[type="range"]#audio-controls-slider').on('mouseup', (e) => {
+            let slider = e.currentTarget
+            slider_is_mouse_down = false;
+            let seeked_value = Responds["Current"].duration * slider_temp_value / slider.max;
+            SendAudioRemote("Seek", seeked_value)
+        })
+
+        $('button#page-changing-cover').click(() => {
+            $('#body-container').load('cover')
+        })
+        $('button#page-changing-list').click(() => {
+            $('#body-container').load('list')
+        })
+
+        $('#body-container').load('cover')
+
     </script>
 </body>
 

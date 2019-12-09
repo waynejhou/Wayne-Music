@@ -4,6 +4,7 @@ node_modules/*
 www/fontawesome-free-5.11.2-web/*
 www/js/jquery-3.4.1.*.js
 www/js/require-2.3.6.*.js
+www/dist/*
 dist/*
 ipcMain/*.d.ts
 ipcRenderer/*.d.ts

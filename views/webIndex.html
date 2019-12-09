@@ -55,9 +55,8 @@
         </div>
         <script type='text/javascript' src='dist/Index.js'></script>
         <script type="text/javascript">
-            onRespondCurrent = (data) => {
-                updateBottomInfo(data)
-            }
+
+
             function updateBottomInfo(data) {
                 if (data.title) {
                     $('head title').html(`${data.title} - Wayne Music`)
@@ -68,6 +67,104 @@
                 $('#metadata-title').html(data.title)
                 $('#metadata-album').html(data.album)
             };
+
+            function updateCover(data) {
+                $('img#metadata-cover').attr('src', data.picture)
+                $('div.cover-background').css({
+                    "background": `url(${data.picture})`,
+                    "background-size": "contain",
+                    "background-position": "center",
+                    "filter": "blur(25px)",
+                })
+            }
+
+            function updateControlsBtn(playbackState) {
+                if (playbackState == 'playing') {
+                    $("#audio-controls-playpause-btn").html('<i class="fas fa-pause"></i>')
+                } else {
+                    $("#audio-controls-playpause-btn").html('<i class="fas fa-play"></i>')
+                };
+            }
+
+            let slider_is_mouse_down = false;
+            function updateSliderPos(seek) {
+                if (slider_is_mouse_down) return;
+                $('input[type="range"]#audio-controls-slider').each((_, slider) => {
+                    slider.value = seek * slider.max / Responds["Current"].duration
+                });
+            }
+
+            function updateRepeatBtn(loopState) {
+                if (loopState) {
+                    $('#audio-controls-repeat-btn').html(
+                        '<div id="repeat-btn-icon-layout">' +
+                        '    <i id="repeat-btn-icon" class="unicode-symbol">&#x2B8C;</i>' +
+                        '    <span id="repeat-btn-addition">1</span>' +
+                        '</div>'
+                    )
+                } else {
+                    $('#audio-controls-repeat-btn').html(
+                        '<i class="unicode-symbol">&#x2B8C;</i>'
+                    )
+                }
+            }
+
+            OnResponds["Current"] = (data) => {
+                updateBottomInfo(data)
+                updateCover(data)
+            }
+            OnResponds["PlaybackState"] = (data) => {
+                updateControlsBtn(data)
+            }
+            OnResponds["Loop"] = (data) => {
+                updateRepeatBtn(data)
+            }
+            OnResponds["Seek"] = (data) => {
+                updateSliderPos(data)
+            }
+
+            $('#audio-controls-playpause-btn').click(() => {
+                if (Responds["PlaybackState"] == 'playing') {
+                    SendAudioRemote("PlaybackState", 'paused')
+                }
+                else {
+                    SendAudioRemote("PlaybackState", 'playing')
+                }
+            });
+            $('#audio-controls-repeat-btn').click(() => {
+                let loop = !Responds["Loop"]
+                SendAudioRemote("Loop", loop)
+            });
+
+            // slider related Callbacks
+            //let slider_temp_value = 0;
+            window.setInterval(() => {
+                if (Responds["PlaybackState"] != 'playing') return
+                SendAudioQuery("Seek")
+            }, 33);
+            $('input[type="range"]#audio-controls-slider').on('mousedown', (e) => {
+                let slider = e.currentTarget
+                slider_is_mouse_down = true
+            })
+            $('input[type="range"]#audio-controls-slider').on('input change', (e) => {
+                let slider = e.currentTarget
+                slider_temp_value = slider.value
+            })
+            $('input[type="range"]#audio-controls-slider').on('mouseup', (e) => {
+                let slider = e.currentTarget
+                slider_is_mouse_down = false;
+                let seeked_value = Responds["Current"].duration * slider_temp_value / slider.max;
+                SendAudioRemote("Seek", seeked_value)
+            })
+
+            $('button#page-changing-cover').click(() => {
+                $('#body-container').load('cover')
+            })
+            $('button#page-changing-list').click(() => {
+                $('#body-container').load('list')
+            })
+
+            $('#body-container').load('cover')
 
         </script>
     </div>

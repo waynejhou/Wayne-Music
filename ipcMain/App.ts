@@ -95,6 +95,8 @@ function createWindow() {
         // 拿掉 window 物件的參照。如果你的應用程式支援多個視窗，
         // 你可能會將它們存成陣列，現在該是時候清除相關的物件了。
         g.mainWin = null;
+        g.wsServer.close();
+        g.wsServer = null;
         g.bgWorker.destroy()
         g.bgWorker = null;
     })

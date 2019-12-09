@@ -10,10 +10,11 @@ export class AudioData {
         this.comment = (metadata.common.comment ? metadata.common.comment[0] : null)
         this.date = metadata.common.date
         this.disk = metadata.common.disk
+        this.duration = metadata.format.duration
         this.genre = (metadata.common.genre ? metadata.common.genre[0] : null)
         if (metadata.common.picture) {
             let pic = metadata.common.picture[0]
-            this.picture = `data:${pic.format}base64,${bytesToBase64(pic.data)}`
+            this.picture = `data:${pic.format};base64,${bytesToBase64(pic.data)}`
         } else this.picture = "img/Ellipses.png"
         this.title = metadata.common.title
         this.track = metadata.common.track
@@ -31,6 +32,8 @@ export class AudioData {
     public date: string = null
 
     public disk: { no: number, of: number } = null
+
+    public duration: number = null;
 
     public genre: string = null
 

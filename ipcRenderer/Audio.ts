@@ -2,7 +2,8 @@ import { ipcRenderer, remote } from 'electron';
 import { Howl, Howler } from 'howler';
 import { Server as WebSocketServer } from 'ws'
 import { AudioData } from './AudioData'
-const { IpcChannels } = remote.require('./IpcChannels')
+import { IpcChannels as IpcChannelsType } from './IpcChannels'
+const IpcChannels = ((): typeof IpcChannelsType => { return remote.require('./IpcChannels').IpcChannels })()
 const wsServer: WebSocketServer = remote.getGlobal('wsServer')
 
 const EMPTY_AUDIO_DATA: AudioData = {
@@ -11,13 +12,20 @@ const EMPTY_AUDIO_DATA: AudioData = {
     artist: null,
     comment: null,
     date: null,
-    disk:  {no:null,of:null},
+    disk: { no: null, of: null },
+    duration: null,
     genre: null,
     picture: "img/Ellipses.png",
     title: null,
-    track: {no:null,of:null},
+    track: { no: null, of: null },
     url: null,
     year: null,
+}
+
+const PlaybackStateEnum = {
+    playing : 'playing',
+    paused : 'paused',
+    stopped : 'stopped',
 }
 
 class AudioStateManager {
@@ -37,11 +45,64 @@ class AudioStateManager {
         this._howl = new Howl({
             src: [value.url],
             volume: 0.25,
-            loop: true,
-            autoplay: true
+            loop: true
+        })
+        this._howl.once('load', () => {
+            this.PlaybackState = PlaybackStateEnum.playing
+        })
+        this._howl.on('end', () => {
+            if (!this.Loop) {
+                this.PlaybackState = PlaybackStateEnum.stopped;
+            }
         })
         this._current = value
     }
+    private _playbackState:string = 'stopped'
+    public get PlaybackState():string {
+        return this._playbackState;
+    }
+    public set PlaybackState(value:string) {
+        if (!this._howl) return;
+        if (!(value in PlaybackStateEnum)) return;
+        this._playbackState = value;
+        if (value == PlaybackStateEnum.playing) {
+            this._howl.play()
+        }
+        if (value == PlaybackStateEnum.paused) {
+            this._howl.pause()
+        }
+        if (value == PlaybackStateEnum.stopped) {
+            this._howl.stop()
+        }
+        wsServer.clients.forEach((client) => {
+            client.send(JSON.stringify({ channel: IpcChannels.audio_respond_playbackState, data: this.PlaybackState }))
+        })
+    }
+    private _loop:boolean = false
+    public get Loop():boolean {
+        return this._loop;
+    }
+    public set Loop(value:boolean) {
+        this._loop = !!value;
+        if (this._howl) { this._howl.loop(!!value); }
+        wsServer.clients.forEach((client) => {
+            client.send(JSON.stringify({ channel: IpcChannels.audio_respond_loop, data: this.Loop }))
+        })
+    }
+    public get Seek():number {
+        if (!this._howl) { return 0; }
+        let ret = this._howl.seek();
+        if (typeof ret != "number"){ return 0; }
+        return <number><unknown>ret;
+    }
+    public set Seek(value:number) {
+        if (!this._howl) return 
+        this._howl.seek(value);
+        wsServer.clients.forEach((client) => {
+            client.send(JSON.stringify({ channel: IpcChannels.audio_respond_seek, data: value }))
+        })
+    }
+
 }
 
 let manager = new AudioStateManager();
@@ -49,16 +110,26 @@ let manager = new AudioStateManager();
 ipcRenderer.on(IpcChannels.audio_change_src, (e, arg) => {
     manager.Current = arg
     wsServer.clients.forEach((client) => {
-        client.send(JSON.stringify({ channel: IpcChannels.respond_current, data: arg }))
+        client.send(JSON.stringify({ channel: IpcChannels.audio_respond_current, data: arg }))
     })
 })
 
 ipcRenderer.on(IpcChannels.wss_message_incoming, (e, arg) => {
-    let { channel } = arg;
-    if (channel == IpcChannels.query_current) {
-        wsServer.clients.forEach((client) => {
-            let data = manager.Current
-            client.send(JSON.stringify({ channel: IpcChannels.respond_current, data: data }))
-        })
+    let channel: string = arg.channel;
+    let channel_split = channel.split('-')
+    if (channel_split[0] == "audio") {
+        if (channel_split[1] == "query") {
+            wsServer.clients.forEach((client) => {
+                let resData = manager[channel_split[2]]
+                let resCh = `${channel_split[0]}-respond-${channel_split[2]}`
+                client.send(JSON.stringify({ channel: resCh, data: resData }))
+            })
+        }
+        if (channel_split[1] == "remote") {
+            let remotedProperty = channel_split[2];
+            let remoteData = arg.data;
+            console.log(arg.data)
+            manager[remotedProperty] = remoteData;
+        }
     }
 })
