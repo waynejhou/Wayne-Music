@@ -46,7 +46,11 @@
                         </button>
                     </div>
                     <div id="audio-controls-slider-container" class="card">
+                        <div id="audio-controls-slider-value">00:00</div>
                         <input type="range" id="audio-controls-slider" min="0" max="1000" value="25"></input>
+                        <div id="audio-controls-slider-popuphint">00:00</div>
+                        <div id="audio-controls-slider-max"><span class="min">00</span><span>:</span><span
+                                class="sec">00</span></div>
                     </div>
 
                 </div>
@@ -69,6 +73,10 @@
 
             $('#metadata-title').html(data.title)
             $('#metadata-album').html(data.album)
+
+            $('#audio-controls-slider-max').each((_, span) => {
+                span.innerHTML = duration2string(Responds.Current.duration);
+            })
         };
 
         function updateCover(data) {
@@ -89,14 +97,6 @@
             };
         }
 
-        let slider_is_mouse_down = false;
-        function updateSliderPos(seek) {
-            if (slider_is_mouse_down) return;
-            $('input[type="range"]#audio-controls-slider').each((_, slider) => {
-                slider.value = seek * slider.max / Responds["Current"].duration
-            });
-        }
-
         function updateRepeatBtn(loopState) {
             if (loopState) {
                 $('#audio-controls-repeat-btn').html(
@@ -111,19 +111,26 @@
                 )
             }
         }
-
-        OnResponds["Current"] = (data) => {
-            updateBottomInfo(data)
-            updateCover(data)
+        if (!OnResponds.Current) {
+            OnResponds.Current = (data) => {
+                updateBottomInfo(data)
+                updateCover(data)
+            }
         }
-        OnResponds["PlaybackState"] = (data) => {
-            updateControlsBtn(data)
+        if (!OnResponds.PlaybackState) {
+            OnResponds.PlaybackState = (data) => {
+                updateControlsBtn(data)
+            }
         }
-        OnResponds["Loop"] = (data) => {
-            updateRepeatBtn(data)
+        if (!OnResponds.Loop) {
+            OnResponds.Loop = (data) => {
+                updateRepeatBtn(data)
+            }
         }
-        OnResponds["Seek"] = (data) => {
-            updateSliderPos(data)
+        if (!OnResponds.Seek) {
+            OnResponds.Seek = (data) => {
+                updateSliderPos(data)
+            }
         }
 
         $('#audio-controls-playpause-btn').click(() => {
@@ -139,12 +146,36 @@
             SendAudioRemote("Loop", loop)
         });
 
+
+        let slider_is_mouse_down = false;
+        function updateSliderPos(seek) {
+            $('input[type="range"]#audio-controls-slider').each((_, slider) => {
+                slider.value = seek * slider.max / Responds["Current"].duration
+            });
+
+            $('#audio-controls-slider-value').each((_, span) => {
+                span.innerHTML = duration2string(Responds.Seek)
+            })
+
+        }
         // slider related Callbacks
         //let slider_temp_value = 0;
         window.setInterval(() => {
             if (Responds["PlaybackState"] != 'playing') return
-            SendAudioQuery("Seek")
+            if (slider_is_mouse_down) return;
+            Responds["Seek"] += 0.033
+            updateSliderPos(Responds["Seek"])
         }, 33);
+        $('input[type="range"]#audio-controls-slider').on('mousemove', (e) => {
+            let slider = e.currentTarget
+            let preSeek = Responds["Current"].duration * e.offsetX / slider.clientWidth
+            $('#audio-controls-slider-popuphint').css({
+                left: slider.offsetLeft + e.offsetX - 30,
+                top: slider.offsetTop - 30
+            })
+            $('#audio-controls-slider-popuphint').html(duration2string(preSeek))
+
+        })
         $('input[type="range"]#audio-controls-slider').on('mousedown', (e) => {
             let slider = e.currentTarget
             slider_is_mouse_down = true
@@ -154,6 +185,7 @@
             slider_temp_value = slider.value
         })
         $('input[type="range"]#audio-controls-slider').on('mouseup', (e) => {
+            if (!slider_is_mouse_down) return;
             let slider = e.currentTarget
             slider_is_mouse_down = false;
             let seeked_value = Responds["Current"].duration * slider_temp_value / slider.max;

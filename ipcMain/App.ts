@@ -9,7 +9,7 @@ import { Server as WebSocketServer } from 'ws'
 interface Global extends NodeJS.Global {
     mainWin: BrowserWindow,
     bgWorker: BrowserWindow,
-    wsServer:WebSocketServer
+    wsServer: WebSocketServer
 }
 function GetGlobal(): Global { return <Global>global }
 var g = GetGlobal();
@@ -24,10 +24,10 @@ const viewApp = viewExpress.getPresetExpressApp(app.getAppPath())
 const viewServer = viewApp.listen(VIEW_PORT, () => {
     console.log(`View Server running at http://127.0.0.1:${VIEW_PORT}/`);
 })
-g.wsServer = new WebSocketServer({server : viewServer})
-g.wsServer.on("connection",(socket, request)=>{
+g.wsServer = new WebSocketServer({ server: viewServer })
+g.wsServer.on("connection", (socket, request) => {
     console.log('Client connected')
-    socket.on("message",(data)=>{
+    socket.on("message", (data) => {
         g.bgWorker.webContents.send(IpcChannels.wss_message_incoming, JSON.parse(<string>data))
     })
     socket.on('close', () => {
@@ -117,10 +117,11 @@ function createWindow() {
                     label: '&Open File',
                     click: () => {
                         dialog.showOpenDialog(g.mainWin, {
-                            filters: [newFileFilter('Audio', ['flac', 'mp3'])],
-                            title: "Open Audio"
-                        }).then((result: any) => {
-                            if (result.filePaths.length < 0) return;
+                            filters: [newFileFilter('Audio', ['flac', 'mp3']),],
+                            title: "Open Audio",
+                            properties: ["multiSelections"],
+                        }).then((result: { canceled: boolean, filePaths: string[] }) => {
+                            if (result.canceled) return;
                             mm.parseFile(result.filePaths[0], { skipPostHeaders: true })
                                 .then((metadata: mm.IAudioMetadata) => {
                                     let data = new AudioData(result.filePaths[0], metadata);
@@ -134,6 +135,22 @@ function createWindow() {
                                 .catch((err) => {
                                     console.error(err.message);
                                 });
+                            result.filePaths.forEach((path, idx) => {
+                                if (idx == 0) return;
+                                mm.parseFile(result.filePaths[idx], { skipPostHeaders: true })
+                                    .then((metadata: mm.IAudioMetadata) => {
+                                        let data = new AudioData(result.filePaths[idx], metadata);
+                                        console.log("" + data)
+                                        console.log(
+                                            `[ipcMain send {audio_data: "${data.url}"}` +
+                                            " to {bgWorker}" +
+                                            " on channel: {ipcChannels.audio_add_src}]")
+                                        g.bgWorker.webContents.send(IpcChannels.audio_add_src, data)
+                                    })
+                                    .catch((err) => {
+                                        console.error(err.message);
+                                    });
+                            });
                         })
                     }
                 },
