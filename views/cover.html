@@ -2,8 +2,10 @@
 <img id="metadata-cover">
 <script type='text/javascript'>
     {// on Page Loadded
+        console.log(Responds)
         if(Responds["Current"]){
-            updateCover(Responds["Current"])
+            updateCover(Responds.Current.picture)
+            updateCoverBackground(Responds.Current.picture)
         }
     }
 </script>

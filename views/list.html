@@ -12,7 +12,8 @@
         })
         _listSelectedAudio = data
         _listSelectedAudioIdx = idx
-        updateCover(getSelectedAudio())
+        updateCover(getSelectedAudio().picture)
+        updateCoverBackground(getSelectedAudio().picture)
         updateCoverList(getSelectedAudio())
     }
     function updateCurrentList(list) {
@@ -40,7 +41,7 @@
                 }
             })
             newele.on('dblclick', (e) => {
-                SendAudioRemote("Current", element)
+                w.AppIpc.Send2Audio("Remote", "Current", element)
             })
             newele.on('click', (e) => {
                 ckeckItemInList(idx, element)
@@ -58,7 +59,7 @@
     if (Responds.CurrentList) {
         updateCurrentList(Responds.CurrentList)
     } else {
-        SendAudioQuery("CurrentList")
+        AppIpc.Send2Audio("Query", "CurrentList")
     }
     if (typeof _listSelectedAudio === 'undefined') {
         var _listSelectedAudio = null;
@@ -99,6 +100,7 @@
         }
     }
 
-    updateCover(getSelectedAudio())
+    updateCover(getSelectedAudio().picture)
+    updateCoverBackground(getSelectedAudio().picture)
     updateCoverList(getSelectedAudio())
 </script>

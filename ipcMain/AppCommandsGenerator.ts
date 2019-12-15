@@ -31,6 +31,7 @@ export class AppCommandsGenerator {
                 .then((metadata: mm.IAudioMetadata) => {
                     let data = new AudioData(result.filePaths[0], metadata);
                     this._ipcMg.Send2Audio("Remote", "Current", data);
+                    this._ipcMg.Send2Audio("Add", "CurrentList", data);
                 })
                 .catch((err) => {
                     console.error(err.message);

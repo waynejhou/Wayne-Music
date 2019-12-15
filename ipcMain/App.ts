@@ -49,7 +49,7 @@ function createWindow() {
 
 
     // bgWorker 讀取頁面
-    g.audioBgWin.loadURL(`http://loGcalhost:${VIEW_PORT}/audio`)
+    g.audioBgWin.loadURL(`http://localhost:${VIEW_PORT}/audio`)
     // bgWorker 開啟獨立(因為沒有視窗依附)開發視窗
     g.audioBgWin.webContents.openDevTools({
         mode: "detach"

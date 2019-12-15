@@ -62,41 +62,40 @@
     </div>
     <script type='text/javascript' src='dist/Index.js'></script>
     <script type='text/javascript'>
-
-
-        function updateBottomInfo(data) {
-            if (data.title) {
-                $('head title').html(`${data.title} - Wayne Music`)
+        function updateTitle(title){
+            if (title) {
+                $('head title').html(`${title} - Wayne Music`)
             } else {
                 $('head title').html(`Wayne Music`)
             }
-
-            $('#metadata-title').html(data.title)
-            $('#metadata-album').html(data.album)
-
-            $('#audio-controls-slider-max').each((_, span) => {
-                span.innerHTML = duration2string(Responds.Current.duration);
-            })
+        }
+        function updateAudioInfo(title, album) {
+            $('#metadata-title').html(title)
+            $('#metadata-album').html(album)
         };
-
-        function updateCover(data) {
-            $('img#metadata-cover').attr('src', data.picture)
+        function updateDuration(duration){
+            $('#audio-controls-slider-max').each((_, span) => {
+                span.innerHTML = duration;
+            })
+        }
+        function updateCover(picture) {
+            $('img#metadata-cover').attr('src', picture)
+        }
+        function updateCoverBackground(picture) {
             $('div.cover-background').css({
-                "background": `url(${data.picture})`,
+                "background": `url(${picture})`,
                 "background-size": "contain",
                 "background-position": "center",
                 "filter": "blur(25px)",
             })
         }
-
-        function updateControlsBtn(playbackState) {
+        function updatePlayPauseBtn(playbackState) {
             if (playbackState == 'playing') {
                 $("#audio-controls-playpause-btn").html('<i class="fas fa-pause"></i>')
             } else {
                 $("#audio-controls-playpause-btn").html('<i class="fas fa-play"></i>')
             };
         }
-
         function updateRepeatBtn(loopState) {
             if (loopState) {
                 $('#audio-controls-repeat-btn').html(
@@ -111,15 +110,19 @@
                 )
             }
         }
+
         if (!OnResponds.Current) {
             OnResponds.Current = (data) => {
-                updateBottomInfo(data)
-                updateCover(data)
+                updateTitle(data.title)
+                updateAudioInfo(data.title, data.album)
+                updateCover(data.picture)
+                updateCoverBackground(data.picture)
+                updateDuration(duration2string(data.duration))
             }
         }
         if (!OnResponds.PlaybackState) {
             OnResponds.PlaybackState = (data) => {
-                updateControlsBtn(data)
+                updatePlayPauseBtn(data)
             }
         }
         if (!OnResponds.Loop) {
@@ -135,17 +138,16 @@
 
         $('#audio-controls-playpause-btn').click(() => {
             if (Responds["PlaybackState"] == 'playing') {
-                SendAudioRemote("PlaybackState", 'paused')
+                w.AppIpc.Send2Audio("Remote", "PlaybackState", 'paused')
             }
             else {
-                SendAudioRemote("PlaybackState", 'playing')
+                w.AppIpc.Send2Audio("Remote", "PlaybackState", 'playing')
             }
         });
         $('#audio-controls-repeat-btn').click(() => {
             let loop = !Responds["Loop"]
-            SendAudioRemote("Loop", loop)
+            w.AppIpc.Send2Audio("Remote", "Loop", loop)
         });
-
 
         let slider_is_mouse_down = false;
         function updateSliderPos(seek) {
@@ -158,8 +160,6 @@
             })
 
         }
-        // slider related Callbacks
-        //let slider_temp_value = 0;
         window.setInterval(() => {
             if (Responds["PlaybackState"] != 'playing') return
             if (slider_is_mouse_down) return;
@@ -189,9 +189,8 @@
             let slider = e.currentTarget
             slider_is_mouse_down = false;
             let seeked_value = Responds["Current"].duration * slider_temp_value / slider.max;
-            SendAudioRemote("Seek", seeked_value)
+            w.AppIpc.Send2Audio("Remote", "Seek", seeked_value)
         })
-
         $('button#page-changing-cover').click(() => {
             $('#body-container').load('cover')
         })

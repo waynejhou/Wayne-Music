@@ -7,4 +7,5 @@ www/js/require-2.3.6.*.js
 www/dist/*
 dist/*
 ipcMain/*.d.ts
-ipcRenderer/*.d.ts
+ipcRenderer/resources
+resources

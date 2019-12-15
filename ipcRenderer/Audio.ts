@@ -1,10 +1,12 @@
 import { ipcRenderer, remote } from 'electron';
 import { Howl, Howler } from 'howler';
 import { Server as WebSocketServer } from 'ws'
-import { AudioData } from './AudioData'
-import { IpcChannels as IpcChannelsType } from './IpcChannels'
-const IpcChannels = ((): typeof IpcChannelsType => { return remote.require('./IpcChannels').IpcChannels })()
+
+import { AudioData } from './resources/app.asar/www/dist/AudioData'
+import { AppIPCAudio } from './resources/app.asar/www/dist/AppIPCAudio'
+
 const wsServer: WebSocketServer = remote.getGlobal('wsServer')
+const appIpc = new AppIPCAudio(wsServer, ipcRenderer)
 
 const EMPTY_AUDIO_DATA: AudioData = {
     album: null,
@@ -40,8 +42,6 @@ class AudioStateManager {
             this._howl.unload()
             this._howl = null;
         }
-        console.log(value)
-        console.log(value.url)
         this._howl = new Howl({
             src: [value.url],
             volume: 0.25,
@@ -49,20 +49,15 @@ class AudioStateManager {
         })
         this._howl.once('load', () => {
             this.PlaybackState = PlaybackStateEnum.playing
-            wsServer.clients.forEach((client) => {
-                client.send(JSON.stringify({ channel: IpcChannels.audio_respond_current, data: this.Current }))
-                client.send(JSON.stringify({ channel: IpcChannels.audio_respond_currentlist, data: this.CurrentList }))
-            })
+            appIpc.Send2Renderer("Respond", "Current", this.Current);
+            appIpc.Send2Renderer("Respond", "CurrentList", this.CurrentList);
         })
         this._howl.on('end', () => {
             if (!this.Loop) {
                 this.PlaybackState = PlaybackStateEnum.stopped;
             }
-            wsServer.clients.forEach((client) => {
-                client.send(JSON.stringify({ channel: IpcChannels.audio_respond_playbackState, data: this.PlaybackState }))
-                client.send(JSON.stringify({ channel: IpcChannels.audio_respond_seek, data: this.Seek }))
-            })
-
+            appIpc.Send2Renderer("Respond", "PlaybackState", this.PlaybackState);
+            appIpc.Send2Renderer("Respond", "Seek", this.Seek);
         })
         this._current = value
     }
@@ -84,8 +79,8 @@ class AudioStateManager {
             this._howl.stop()
         }
         wsServer.clients.forEach((client) => {
-            client.send(JSON.stringify({ channel: IpcChannels.audio_respond_playbackState, data: this.PlaybackState }))
-            client.send(JSON.stringify({ channel: IpcChannels.audio_respond_seek, data: this.Seek }))
+            appIpc.Send2Renderer("Respond", "PlaybackState", this.PlaybackState);
+            appIpc.Send2Renderer("Respond", "Seek", this.Seek);
         })
     }
     private _loop: boolean = false
@@ -95,9 +90,7 @@ class AudioStateManager {
     public set Loop(value: boolean) {
         this._loop = !!value;
         if (this._howl) { this._howl.loop(!!value); }
-        wsServer.clients.forEach((client) => {
-            client.send(JSON.stringify({ channel: IpcChannels.audio_respond_loop, data: this.Loop }))
-        })
+        appIpc.Send2Renderer("Respond", "Loop", this.Loop);
     }
     public get Seek(): number {
         if (!this._howl) { return 0; }
@@ -112,9 +105,7 @@ class AudioStateManager {
         }
 
         this._howl.seek(value);
-        wsServer.clients.forEach((client) => {
-            client.send(JSON.stringify({ channel: IpcChannels.audio_respond_seek, data: value }))
-        })
+        appIpc.Send2Renderer("Respond", "Seek", value);
     }
     private _currentList: AudioData[] = new Array<AudioData>();
 
@@ -126,36 +117,15 @@ class AudioStateManager {
 
 let manager = new AudioStateManager();
 
-ipcRenderer.on(IpcChannels.audio_change_src, (e, arg) => {
-    manager.Current = arg
-    manager.CurrentList.push(arg);
+appIpc.On('Remote', (request, data)=>{
+    console.log(data)
+    manager[request] = data
 })
-ipcRenderer.on(IpcChannels.audio_add_src, (e, arg) => {
-    manager.CurrentList.push(arg);
-    wsServer.clients.forEach((client) => {
-        client.send(JSON.stringify({ channel: IpcChannels.audio_query_currentlist, data: manager.CurrentList }))
-    })
+appIpc.On('Query', (request, data)=>{
+    console.log(data)
+    appIpc.Send2Renderer("Respond", request, manager[request])
 })
-
-ipcRenderer.on(IpcChannels.wss_message_incoming, (e, arg) => {
-    let channel: string = arg.channel;
-    let channel_split = channel.split('-')
-    if (channel_split[0] == "audio") {
-        if (channel_split[1] == "query") {
-            console.log("Got Query")
-            console.log(channel_split[2])
-            wsServer.clients.forEach((client) => {
-                let resData = manager[channel_split[2]]
-                let resCh = `${channel_split[0]}-respond-${channel_split[2]}`
-                client.send(JSON.stringify({ channel: resCh, data: resData }))
-            })
-        }
-        if (channel_split[1] == "remote") {
-            let remotedProperty = channel_split[2];
-            let remoteData = arg.data;
-            console.log("Got Remote")
-            console.log(arg.data)
-            manager[remotedProperty] = remoteData;
-        }
-    }
+appIpc.On('Add', (request, data)=>{
+    console.log(data)
+    manager[request].push(data)
 })
