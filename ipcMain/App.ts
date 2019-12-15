@@ -1,54 +1,42 @@
-import { app, BrowserWindow, dialog, Menu, FileFilter, MenuItemConstructorOptions, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from 'electron';
 
-import * as mm from 'music-metadata'
 import viewExpress from './viewExpress';
-import { IpcChannels } from './IpcChannels';
-import { AudioData } from './AudioData'
 import { Server as WebSocketServer } from 'ws'
+import { Server as HttpServer } from 'http'
+import { AppIPCMain } from './AppIPCMain'
+import { AppMenuGenerator } from './AppMenuGenerator'
+import { AppCommandsGenerator } from './AppCommandsGenerator'
 
 interface Global extends NodeJS.Global {
-    mainWin: BrowserWindow,
-    bgWorker: BrowserWindow,
-    wsServer: WebSocketServer
+    viewServer: HttpServer,
+    nativeWin: BrowserWindow,
+    audioBgWin: BrowserWindow,
+    wsServer: WebSocketServer,
+    ipcMg: AppIPCMain,
+    appCmdGen: AppCommandsGenerator,
+    appMenuGen: AppMenuGenerator
 }
 function GetGlobal(): Global { return <Global>global }
 var g = GetGlobal();
-(<Global>global).mainWin = null;
-(<Global>global).bgWorker = null;
+(<Global>global).viewServer = null;
+(<Global>global).nativeWin = null;
+(<Global>global).audioBgWin = null;
 (<Global>global).wsServer = null;
-
+(<Global>global).ipcMg = null;
+(<Global>global).appCmdGen = null;
+(<Global>global).appMenuGen = null;
 
 const VIEW_PORT = 8888;
-const WS_PORT = 8889;
 const viewApp = viewExpress.getPresetExpressApp(app.getAppPath())
-const viewServer = viewApp.listen(VIEW_PORT, () => {
-    console.log(`View Server running at http://127.0.0.1:${VIEW_PORT}/`);
-})
-g.wsServer = new WebSocketServer({ server: viewServer })
-g.wsServer.on("connection", (socket, request) => {
-    console.log('Client connected')
-    socket.on("message", (data) => {
-        g.bgWorker.webContents.send(IpcChannels.wss_message_incoming, JSON.parse(<string>data))
-    })
-    socket.on('close', () => {
-        console.log('Close connected')
-    })
-})
-
-
-
-const isMac = process.platform === 'darwin'
-
-function newFileFilter(name: string, exts: string[]): FileFilter {
-    return {
-        name: name,
-        extensions: exts
-    }
-}
 
 function createWindow() {
-    // 建立 Background Worker (一個不會顯示的瀏覽器視窗)。
-    g.bgWorker = new BrowserWindow({
+    g.viewServer = viewApp.listen(VIEW_PORT, () => {
+        console.log(`View Server running at http://127.0.0.1:${VIEW_PORT}/`);
+    })
+    g.wsServer = new WebSocketServer({ server: g.viewServer })
+
+    // 建立 Audio Background Worker (一個不會顯示的瀏覽器視窗)。
+    g.audioBgWin = new BrowserWindow({
         show: false,
         webPreferences: {
             nodeIntegration: true,
@@ -56,108 +44,56 @@ function createWindow() {
         }
     })
 
+    g.ipcMg = new AppIPCMain(g.audioBgWin, g.wsServer);
+
+
+
     // bgWorker 讀取頁面
-    g.bgWorker.loadURL(`http://localhost:${VIEW_PORT}/audio`)
+    g.audioBgWin.loadURL(`http://loGcalhost:${VIEW_PORT}/audio`)
     // bgWorker 開啟獨立(因為沒有視窗依附)開發視窗
-    g.bgWorker.webContents.openDevTools({
+    g.audioBgWin.webContents.openDevTools({
         mode: "detach"
     })
 
-
     // 建立瀏覽器視窗。
-    g.mainWin = new BrowserWindow({
+    g.nativeWin = new BrowserWindow({
         width: 900,
         height: 900,
         minWidth: 800,
         minHeight: 600,
         webPreferences: {
-            nodeIntegration: true,
-            //webSecurity: false,
-            //devTools: false,
+            nodeIntegration: true
         }
     })
-
-    /*
-    globalShortcut.register('CommandOrControl+R', function() {
-        console.log('CommandOrControl+R is pressed')
-        win.reload()
-        win.webContents.openDevTools()
-    })*/
+    g.appCmdGen = new AppCommandsGenerator(app, g.nativeWin, g.ipcMg);
 
     // and load the index.html of the app.
-    g.mainWin.loadURL(`http://localhost:${VIEW_PORT}`)
+    g.nativeWin.loadURL(`http://localhost:${VIEW_PORT}`)
 
     // Open the DevTools.
-    g.mainWin.webContents.openDevTools()
+    g.nativeWin.webContents.openDevTools()
 
     // 視窗關閉時會觸發。
-    g.mainWin.on('closed', () => {
+    g.nativeWin.on('closed', () => {
         // 拿掉 window 物件的參照。如果你的應用程式支援多個視窗，
         // 你可能會將它們存成陣列，現在該是時候清除相關的物件了。
-        g.mainWin = null;
-        g.wsServer.close();
+        g.nativeWin = null;
+        g.ipcMg = null;
+        g.appMenuGen = null;
+        g.appCmdGen = null;
+        g.audioBgWin.destroy();
+        g.audioBgWin = null;
+        g.viewServer.close(() => {
+            console.log("View Server closed.")
+        });
+        g.viewServer = null;
+        g.wsServer.close(() => {
+            console.log("View Server closed.")
+        });
         g.wsServer = null;
-        g.bgWorker.destroy()
-        g.bgWorker = null;
     })
-    let template: MenuItemConstructorOptions[] = [
-        ...(
-            isMac ? [
-                {
-                    label: app.name,
-                    submenu: [
-                        { role: <'about'>'about' }
-                    ]
-                }
-            ] : []),
-        {
-            label: '&File',
-            submenu: [
-                {
-                    label: '&Open File',
-                    click: () => {
-                        dialog.showOpenDialog(g.mainWin, {
-                            filters: [newFileFilter('Audio', ['flac', 'mp3']),],
-                            title: "Open Audio",
-                            properties: ["multiSelections"],
-                        }).then((result: { canceled: boolean, filePaths: string[] }) => {
-                            if (result.canceled) return;
-                            mm.parseFile(result.filePaths[0], { skipPostHeaders: true })
-                                .then((metadata: mm.IAudioMetadata) => {
-                                    let data = new AudioData(result.filePaths[0], metadata);
-                                    console.log("" + data)
-                                    console.log(
-                                        `[ipcMain send {audio_data: "${data.url}"}` +
-                                        " to {bgWorker}" +
-                                        " on channel: {ipcChannels.audio_change_src}]")
-                                    g.bgWorker.webContents.send(IpcChannels.audio_change_src, data)
-                                })
-                                .catch((err) => {
-                                    console.error(err.message);
-                                });
-                            result.filePaths.forEach((path, idx) => {
-                                if (idx == 0) return;
-                                mm.parseFile(result.filePaths[idx], { skipPostHeaders: true })
-                                    .then((metadata: mm.IAudioMetadata) => {
-                                        let data = new AudioData(result.filePaths[idx], metadata);
-                                        console.log("" + data)
-                                        console.log(
-                                            `[ipcMain send {audio_data: "${data.url}"}` +
-                                            " to {bgWorker}" +
-                                            " on channel: {ipcChannels.audio_add_src}]")
-                                        g.bgWorker.webContents.send(IpcChannels.audio_add_src, data)
-                                    })
-                                    .catch((err) => {
-                                        console.error(err.message);
-                                    });
-                            });
-                        })
-                    }
-                },
-                isMac ? { role: <'close'>'close' } : { role: <'quit'>'quit' }
-            ]
-        }
-    ]
+    g.appMenuGen = new AppMenuGenerator(app, g.appCmdGen)
+    let template: MenuItemConstructorOptions[] = g.appMenuGen.MenuTemplate
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
@@ -173,9 +109,6 @@ app.on('window-all-closed', () => {
     // 在 macOS 中，一般會讓應用程式及選單列繼續留著，
     // 除非使用者按了 Cmd + Q 確定終止它們
     if (process.platform !== 'darwin') {
-        viewServer.close(() => {
-            console.log(`view server closed`);
-        })
         app.quit()
     }
 })
@@ -184,7 +117,7 @@ app.on('activate', () => {
     // 在 macOS 中，一般會在使用者按了 Dock 圖示
     // 且沒有其他視窗開啟的情況下，
     // 重新在應用程式裡建立視窗。
-    if (g.mainWin === null) {
+    if (g.nativeWin === null) {
         createWindow()
     }
 })
