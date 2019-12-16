@@ -28,10 +28,10 @@ export class AppMenuGenerator {
                     {
                         label: "&Open Audio",
                         click: () => { this._cmds.OpenDialog_Load_Play() }
-                    }
+                    },
+                    this.CloseOrQuit
                 ]
             },
-            this.CloseOrQuit
         ]
     }
 }

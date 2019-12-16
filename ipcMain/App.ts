@@ -1,12 +1,22 @@
+// import electron: 應用程式基底
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from 'electron';
-
-import viewExpress from './viewExpress';
+// import ws: Renderer 程序間溝通使用 WebSocket
 import { Server as WebSocketServer } from 'ws'
+// import http: express server 的類別使用內建的 http server 介面
 import { Server as HttpServer } from 'http'
+// import http: express server 的類別使用內建的 http server 介面
+import * as portfinder from 'portfinder'
+
+// ./viewExpress: view(UI 網頁) Server 路由設定
+import viewExpress from './viewExpress';
+// ./AppIPCMain: 簡化 IPC 溝通
 import { AppIPCMain } from './AppIPCMain'
+// ./AppMenuGenerator: App Menu 的設定
 import { AppMenuGenerator } from './AppMenuGenerator'
+// ./AppMenuGenerator: App 所會用到的指令(函式)
 import { AppCommandsGenerator } from './AppCommandsGenerator'
 
+// Global 介面擴充，以參照重要物件
 interface Global extends NodeJS.Global {
     viewServer: HttpServer,
     nativeWin: BrowserWindow,
@@ -26,12 +36,18 @@ var g = GetGlobal();
 (<Global>global).appCmdGen = null;
 (<Global>global).appMenuGen = null;
 
-const VIEW_PORT = 8888;
-const viewApp = viewExpress.getPresetExpressApp(app.getAppPath())
+//取得 Express 路由與尋找可用的 Port
+const viewApp = viewExpress.getPresetExpressApp(app)
 
-function createWindow() {
-    g.viewServer = viewApp.listen(VIEW_PORT, () => {
-        console.log(`View Server running at http://127.0.0.1:${VIEW_PORT}/`);
+
+portfinder.getPort({
+    port: 9000,
+    stopPort: 65535
+}, (err, port) => { port });
+
+function createWindow(port:number) {
+    g.viewServer = viewApp.listen(port, "127.0.0.1", () => {
+        console.log(`View Server running at http://127.0.0.1:${port}/`);
     })
     g.wsServer = new WebSocketServer({ server: g.viewServer })
 
@@ -41,6 +57,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
+            devTools: !app.isPackaged
         }
     })
 
@@ -49,7 +66,7 @@ function createWindow() {
 
 
     // bgWorker 讀取頁面
-    g.audioBgWin.loadURL(`http://localhost:${VIEW_PORT}/audio`)
+    g.audioBgWin.loadURL(`http://127.0.0.1:${port}/audio`)
     // bgWorker 開啟獨立(因為沒有視窗依附)開發視窗
     g.audioBgWin.webContents.openDevTools({
         mode: "detach"
@@ -62,16 +79,19 @@ function createWindow() {
         minWidth: 800,
         minHeight: 600,
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            devTools: !app.isPackaged
         }
     })
     g.appCmdGen = new AppCommandsGenerator(app, g.nativeWin, g.ipcMg);
 
     // and load the index.html of the app.
-    g.nativeWin.loadURL(`http://localhost:${VIEW_PORT}`)
+    g.nativeWin.loadURL(`http://127.0.0.1:${port}`)
 
     // Open the DevTools.
-    g.nativeWin.webContents.openDevTools()
+    g.nativeWin.webContents.openDevTools({
+        mode: "detach"
+    })
 
     // 視窗關閉時會觸發。
     g.nativeWin.on('closed', () => {
@@ -98,11 +118,19 @@ function createWindow() {
     Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
 
-
 // 當 Electron 完成初始化，並且準備好建立瀏覽器視窗時
 // 會呼叫這的方法
 // 有些 API 只能在這個事件發生後才能用。
-app.on('ready', createWindow)
+app.on('ready', ()=>{
+    portfinder.getPortPromise({
+        port: 9000,
+        stopPort: 65535
+    }).then((port)=>{
+        createWindow(port)
+    }).catch((err)=>{
+        console.log(err)
+    })
+})
 
 // 在所有視窗都關閉時結束程式。
 app.on('window-all-closed', () => {
@@ -118,7 +146,14 @@ app.on('activate', () => {
     // 且沒有其他視窗開啟的情況下，
     // 重新在應用程式裡建立視窗。
     if (g.nativeWin === null) {
-        createWindow()
+        portfinder.getPortPromise({
+            port: 9000,
+            stopPort: 65535
+        }).then((port)=>{
+            createWindow(port)
+        }).catch((err)=>{
+            console.log(err)
+        })
     }
 })
 

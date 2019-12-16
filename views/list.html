@@ -23,7 +23,6 @@
             if (element.url == Responds.Current.url) {
                 playing = "▶"
             }
-            console.log(Responds.Current.url)
             let newele = $(`
             <div id="list-item-${idx}" class="list-item">
                 <input type="checkbox" id="list-item-checkbox" class="list-item-property"></input>
@@ -41,7 +40,7 @@
                 }
             })
             newele.on('dblclick', (e) => {
-                w.AppIpc.Send2Audio("Remote", "Current", element)
+                AppIpc.Send2Audio("Remote", "Current", element)
             })
             newele.on('click', (e) => {
                 ckeckItemInList(idx, element)

@@ -1,12 +1,16 @@
 import * as express from 'express';
 import * as path from 'path';
+import { App } from 'electron'
 
-export function getPresetExpressApp(electronAppPath: string): express.Express {
+export function getPresetExpressApp(electrinApp: App): express.Express {
     const app = express();
-    const VIEWPATH = path.join(electronAppPath, 'views');
-    const STATICPATH = path.join(electronAppPath, 'www')
+    const VIEWPATH = path.join(electrinApp.getAppPath(), 'views');
+    const STATICPATH = path.join(electrinApp.getAppPath(), 'www');
+    const EXEPATH = this._exePath = electrinApp.isPackaged ? path.dirname(electrinApp.getPath('exe')) : electrinApp.getAppPath();
+    const COVERPATH = path.join(EXEPATH, 'Cover Cache');
 
     app.use(express.static(STATICPATH));
+    app.use(express.static(COVERPATH));
 
     app.get('/', function (req: express.Request, res: express.Response) {
         res.sendFile(path.join(VIEWPATH, 'index.html'));
@@ -29,5 +33,5 @@ export function getPresetExpressApp(electronAppPath: string): express.Express {
 
 
 export default {
-    getPresetExpressApp:getPresetExpressApp
+    getPresetExpressApp: getPresetExpressApp
 }

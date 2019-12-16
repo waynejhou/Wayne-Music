@@ -3,7 +3,7 @@ import { IAudioMetadata } from 'music-metadata'
 import { bytesToBase64 } from './Base64'
 
 export class AudioData {
-    public constructor(nativePath: string, metadata: IAudioMetadata) {
+    public constructor(nativePath: string, metadata: IAudioMetadata, picture:string) {
         this.album = metadata.common.album
         this.albumartist = metadata.common.albumartist
         this.artist = metadata.common.artist
@@ -12,10 +12,7 @@ export class AudioData {
         this.disk = metadata.common.disk
         this.duration = metadata.format.duration
         this.genre = (metadata.common.genre ? metadata.common.genre[0] : null)
-        if (metadata.common.picture) {
-            let pic = metadata.common.picture[0]
-            this.picture = `data:${pic.format};base64,${bytesToBase64(pic.data)}`
-        } else this.picture = "img/Ellipses.png"
+        this.picture = picture
         this.title = metadata.common.title
         this.track = metadata.common.track
         this.url = pathToFileURL(nativePath).href
