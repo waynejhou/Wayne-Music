@@ -77,10 +77,8 @@ export class AppCommandsGenerator {
         this.OpenDialog((result) => {
             if (result.canceled) return;
             result.filePaths.forEach((filePath, idx) => {
-                console.log(`${idx}. ${filePath}`)
                 this.LoadAudioFile(filePath, (metadata, picture) => {
                     let data = new AudioData(filePath, metadata, picture);
-                    console.log(`*${idx}. ${data.url}`)
                     if (idx == 0) {
                         this._ipcMg.Send2Audio("Remote", "Current", data);
                     }
@@ -114,7 +112,7 @@ export class AppCommandsGenerator {
             if (hasCache) {
                 callback(metadata, `${this._coverCacheListFiles[uid]}.png`)
             } else {
-                if (metadata.common.picture.length > 0) {
+                if (metadata.common.picture&&metadata.common.picture.length > 0) {
                     let pic = metadata.common.picture[0]
                     sharp(pic.data).metadata().then((imgmetadata) => {
                         if (imgmetadata.width > 500 || imgmetadata.height > 500) {

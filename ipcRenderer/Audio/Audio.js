@@ -26,6 +26,9 @@ const PlaybackStateEnum = {
     stopped: 'stopped',
 }
 
+function max(a,b){return (a>b)?a:b}
+function min(a,b){return (a<b)?a:b}
+
 class AudioStateManager {
     constructor() { }
     _howl = null;
@@ -108,7 +111,17 @@ class AudioStateManager {
     get CurrentList() {
         return this._currentList;
     }
-
+    _volume = 0.5;
+    get Volume(){
+        if(this._howl) return this._howl.volume();
+        return this._volume;
+    }
+    set Volume(value){
+        let val = max(0,min(1,value))
+        this._volume = val;
+        this._howl.volume(val);
+        appIpc.Send2Renderer("Respond", 'Volume', val)
+    } 
 }
 
 let manager = new AudioStateManager();

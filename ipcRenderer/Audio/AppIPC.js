@@ -17,7 +17,6 @@ class AppIPCAudio {
     _ipcRenderer = null;
     _onCallbacks = {}
     constructor(wss, ipcRenderer) {
-        console.log("app")
         this._wsServer = wss
         this._ipcRenderer = ipcRenderer
         this._ipcRenderer.on("FromWebSocket", (ev, msg) => {

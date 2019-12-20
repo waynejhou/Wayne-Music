@@ -14,6 +14,7 @@ AppIpc = new AppIPCRenderer(ws,
         AppIpc.Send2Audio("Query", "PlaybackState", null)
         AppIpc.Send2Audio("Query", "Seek", null)
         AppIpc.Send2Audio("Query", "CurrentList", null)
+        AppIpc.Send2Audio("Query", "Volume", null)
     },
     (ev) => {
         console.log('close connection')
@@ -27,12 +28,6 @@ AppIpc.On("Respond", (request, data) => {
         cb(data);
     }
 })
-
-function duration2string(duration, sep = ":") {
-    let min = ("" + Math.floor(duration / 60)).padStart(2, "0")
-    let sec = ("" + Math.floor(duration % 60)).padStart(2, "0")
-    return `${min}${sep}${sec}`
-}
 
 window.addEventListener("keydown", (ev) => {
     IsShiftKeyHolding = ev.shiftKey

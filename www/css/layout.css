@@ -1,3 +1,4 @@
+/*One Screen Layout*/
 html, body {
     width: 100%;
     height: 100%;
@@ -7,8 +8,8 @@ html, body {
     padding: 0;
 }
 
-
-div#root-container {
+/*Dock Layout*/
+#root-container {
     display: grid;
     border: none;
     height: 100%;
@@ -17,70 +18,111 @@ div#root-container {
     grid-template-rows: 1fr fit-content(200px);
 }
 
-div#left-side-dock{
+#left-side-dock{
     grid-row: 1;
     grid-column: 1;
     display: flex;
     flex-flow: column;
 }
 
-div#bottom-side-dock{
+#bottom-side-dock{
     grid-row: 2;
     grid-column-start: 1;
     grid-column-end: 3;
 }
 
-div#audio-controls-container {
+/*Layout in Bottom Dock*/
+#audio-controls-container {
     display: grid;
     grid-template-columns: 1fr 2fr;
 }
 
-div#audio-controls-metadata{
+#audio-controls-metadata{
     grid-column: 1;
 }
 
-div#audio-controls{
+#audio-controls{
     display: grid;
     grid-column: 2;
     grid-template-rows: 1fr fit-content(30px);
 }
-div#audio-controls-btns{
+#audio-controls-btns{
     grid-row: 1;
     display: flex;
     align-items: center;
 }
-div#audio-controls-slider-container{
+#audio-controls-slider-container{
     display: grid;
     grid-row: 2;
     grid-auto-columns: fit-content(10px) 1fr fit-content(10px);
 }
-div#audio-controls-slider-value{
+#audio-controls-slider-value{
     grid-column: 1;
 }
-input[type="range"]#audio-controls-slider{
+#audio-controls-slider{
     grid-column: 2;
 }
-div#audio-controls-slider-max{
+#audio-controls-slider-max{
     grid-column: 3;
 }
 
-div#audio-controls-slider-popuphint{
+#audio-controls-slider-popuphint{
     position: fixed;
     z-index: 1;
     opacity: 0;
 }
 
-input[type="range"]#audio-controls-slider:hover + div#audio-controls-slider-popuphint{
+#audio-controls-slider:hover + #audio-controls-slider-popuphint{
     opacity: 1;
 }
-div#list-wrapper{
+
+/*Layout in Body*/
+#body-container {
+    display: grid;
+    padding: 10px;
+}
+
+/*Layout for Background Cover*/
+#background-cover {
+    grid-row: 1;
+    grid-column: 1;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: -100;
+}
+/*Layout in Cover*/
+#metadata-cover {
+    grid-row: 1;
+    grid-column: 1;
+    margin: auto;
+    max-width: 500px;
+    height: auto;
+    max-height: 100%;
+}
+
+/*Layout in List*/
+#metadata-cover-list {
+    grid-row: 1;
+    grid-column: 1;
+    margin: auto;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    max-width: 500px;
+    height: auto;
+    max-height: 100%;
+    z-index: -1;
+}
+
+#list-wrapper{
     display: grid;
     grid-column: 1;
     grid-row: 1;
     max-height: 80vh;
 }
 
-div#list-container{
+#list-container{
     overflow-y: auto;
     overflow-x: hidden;
     max-height: calc(100vh - 150px);

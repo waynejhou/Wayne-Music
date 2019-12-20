@@ -46,8 +46,8 @@ portfinder.getPort({
 }, (err, port) => { port });
 
 function createWindow(port:number) {
-    g.viewServer = viewApp.listen(port, "127.0.0.1", () => {
-        console.log(`View Server running at http://127.0.0.1:${port}/`);
+    g.viewServer = viewApp.listen(port, "localhost", () => {
+        console.log(`View Server running at http://localhost:${port}/`);
     })
     g.wsServer = new WebSocketServer({ server: g.viewServer })
 
@@ -66,7 +66,7 @@ function createWindow(port:number) {
 
 
     // bgWorker 讀取頁面
-    g.audioBgWin.loadURL(`http://127.0.0.1:${port}/audio`)
+    g.audioBgWin.loadURL(`http://localhost:${port}/audio`)
     // bgWorker 開啟獨立(因為沒有視窗依附)開發視窗
     g.audioBgWin.webContents.openDevTools({
         mode: "detach"
@@ -86,7 +86,7 @@ function createWindow(port:number) {
     g.appCmdGen = new AppCommandsGenerator(app, g.nativeWin, g.ipcMg);
 
     // and load the index.html of the app.
-    g.nativeWin.loadURL(`http://127.0.0.1:${port}`)
+    g.nativeWin.loadURL(`http://localhost:${port}`)
 
     // Open the DevTools.
     g.nativeWin.webContents.openDevTools({
