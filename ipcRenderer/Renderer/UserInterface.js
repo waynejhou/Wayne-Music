@@ -1,3 +1,19 @@
+BodyCachedElements = {}
+function bodyCachedLoad(url) {
+    if (BodyCachedElements[url]) {
+        $('#body-container').children = BodyCachedElements[url]
+    } else {
+        $('#body-container').load(url, (result) => {
+            let cache = $(result)
+            console.log(cache.find('script'))
+            cache.find('script').remove()
+            console.log(cache[4])
+            BodyCachedElements[url] = cache
+        })
+    }
+}
+
+
 $('button#page-changing-cover').click(() => {
     $('#body-container').load('cover')
 })
@@ -7,11 +23,11 @@ $('button#page-changing-list').click(() => {
 })
 
 $('#audio-controls-playpause-btn').click(() => {
-    if (Responds["PlaybackState"] == 'playing') {
-        AppIpc.Send2Audio("Remote", "PlaybackState", 'paused')
+    if (Responds["PlaybackState"] == 'playback-playing') {
+        AppIpc.Send2Audio("Remote", "PlaybackState", 'playback-paused')
     }
     else {
-        AppIpc.Send2Audio("Remote", "PlaybackState", 'playing')
+        AppIpc.Send2Audio("Remote", "PlaybackState", 'playback-playing')
     }
 });
 
@@ -23,7 +39,7 @@ $('#audio-controls-repeat-btn').click(() => {
 let isPosSliderMouseDown = false;
 let posSliderTempValue = 0;
 window.setInterval(() => {
-    if (Responds["PlaybackState"] != 'playing') return
+    if (Responds["PlaybackState"] != 'playback-playing') return
     if (isPosSliderMouseDown) return;
     Responds.Seek += 0.033
     updateSliderPos(Responds.Seek)
@@ -60,4 +76,13 @@ $('input[type="range"]#audio-controls-slider').on('mouseup', (e) => {
 
 $('#audio-controls-volume').on("mouseup", (e) => {
     AppIpc.Send2Audio("Remote", "Volume", e.currentTarget.value / 1000)
+})
+
+
+$('#audio-controls-volume').on('mousewheel', (ev) => {
+    if (ev.originalEvent.wheelDelta < 0) {
+        AppIpc.Send2Audio("Remote", "Volume", Responds.Volume - 0.05)
+    } else {
+        AppIpc.Send2Audio("Remote", "Volume", Responds.Volume + 0.05)
+    }
 })

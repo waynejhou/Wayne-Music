@@ -44,7 +44,7 @@ if (!OnResponds.Current) {
 }
 
 function updatePlayPauseBtn(playbackState) {
-    if (playbackState == 'playing') {
+    if (playbackState == 'playback-playing') {
         $("#audio-controls-playpause-btn").html('<i class="fas fa-pause"></i>')
     } else {
         $("#audio-controls-playpause-btn").html('<i class="fas fa-play"></i>')

@@ -21,13 +21,22 @@ const EMPTY_AUDIO_DATA = {
 }
 
 const PlaybackStateEnum = {
-    playing: 'playing',
-    paused: 'paused',
-    stopped: 'stopped',
+    get Playing() { return 'playback-playing' },
+    get Paused() { return 'playback-paused' },
+    get Stopped() { return 'playback-stopped' },
+}
+const RepeatStateEnum = {
+    get Off() { return 'repeat-off' },
+    get Current() { return 'repeat-current' },
+    get List() { return 'repeat-list' },
+}
+const RandomStateEnum = {
+    get Off() { return 'random-off' },
+    get On() { return 'random-on' },
 }
 
-function max(a,b){return (a>b)?a:b}
-function min(a,b){return (a<b)?a:b}
+function max(a, b) { return (a > b) ? a : b }
+function min(a, b) { return (a < b) ? a : b }
 
 class AudioStateManager {
     constructor() { }
@@ -47,37 +56,37 @@ class AudioStateManager {
             loop: true
         })
         this._howl.once('load', () => {
-            this.PlaybackState = PlaybackStateEnum.playing
+            this.PlaybackState = PlaybackStateEnum.Playing
             appIpc.Send2Renderer("Respond", "Current", this.Current);
             appIpc.Send2Renderer("Respond", "CurrentList", this.CurrentList);
         })
         this._howl.on('end', () => {
             if (!this.Loop) {
-                this.PlaybackState = PlaybackStateEnum.stopped;
+                this.PlaybackState = PlaybackStateEnum.Stopped;
             }
             appIpc.Send2Renderer("Respond", "PlaybackState", this.PlaybackState);
             appIpc.Send2Renderer("Respond", "Seek", this.Seek);
         })
         this._current = value
     }
-    _playbackState = 'stopped'
+    _playbackState = PlaybackStateEnum.Stopped
     get PlaybackState() {
         return this._playbackState;
     }
     set PlaybackState(value) {
         if (!this._howl) return;
-        if (!(value in PlaybackStateEnum)) return;
+        if (!Object.values(PlaybackStateEnum).includes(value)) return;
         this._playbackState = value;
-        if (value == PlaybackStateEnum.playing) {
+        if (value == PlaybackStateEnum.Playing) {
             this._howl.play()
         }
-        if (value == PlaybackStateEnum.paused) {
+        if (value == PlaybackStateEnum.Paused) {
             this._howl.pause()
         }
-        if (value == PlaybackStateEnum.stopped) {
+        if (value == PlaybackStateEnum.Stopped) {
             this._howl.stop()
         }
-        wsServer.clients.forEach((client) => {
+        wsServer.clients.forEach((_) => {
             appIpc.Send2Renderer("Respond", "PlaybackState", this.PlaybackState);
             appIpc.Send2Renderer("Respond", "Seek", this.Seek);
         })
@@ -112,16 +121,16 @@ class AudioStateManager {
         return this._currentList;
     }
     _volume = 0.5;
-    get Volume(){
-        if(this._howl) return this._howl.volume();
+    get Volume() {
+        if (this._howl) return this._howl.volume();
         return this._volume;
     }
-    set Volume(value){
-        let val = max(0,min(1,value))
+    set Volume(value) {
+        let val = max(0, min(1, value))
         this._volume = val;
         this._howl.volume(val);
         appIpc.Send2Renderer("Respond", 'Volume', val)
-    } 
+    }
 }
 
 let manager = new AudioStateManager();
