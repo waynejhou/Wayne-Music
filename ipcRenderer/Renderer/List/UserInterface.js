@@ -1,39 +1,56 @@
+_: {
+    if (!((typeof IsListUserInterfaceCalled) === 'undefined')) { break _ }
+    IsListUserInterfaceCalled = true;
+    ListSelectedAudio = null;
+    ListSelectedAudioIdx = null;
 
-if (typeof _listSelectedAudio === 'undefined') {
-    var _listSelectedAudio = null;
-}
-if (typeof _listSelectedAudioIdx === 'undefined') {
-    var _listSelectedAudioIdx = null;
-}
-function getSelectedAudio() {
-    if (_listSelectedAudio) return _listSelectedAudio;
-    return Responds.Current
-}
-function updateCoverList(data) {
-    $('img#metadata-cover-list').attr('src', data.picture)
-}
-if (!On_Up_Press) {
-    On_Up_Press = (ev) => {
-        if (!_listSelectedAudio) return;
-        if (_listSelectedAudioIdx == 0) return;
-        _listSelectedAudioIdx -= 1;
+    getSelectedAudio = () => {
+        if (ListSelectedAudioIdx != null) return Responds.CurrentList[ListSelectedAudioIdx];
+        return Responds.Current
+    }
 
-        Responds.CurrentList.forEach((data, idx) => {
-            if (idx == _listSelectedAudioIdx) {
-                ckeckItemInList(idx, data)
-            }
-        })
+    updateCoverList = (data) => {
+        $('img#metadata-cover-list').attr('src', data.picture)
     }
-}
-if (!On_Down_Press) {
-    On_Down_Press = (ev) => {
-        if (!_listSelectedAudio) return;
-        if (_listSelectedAudioIdx == Responds.CurrentList.length - 1) return;
-        _listSelectedAudioIdx += 1;
-        Responds.CurrentList.forEach((data, idx) => {
-            if (idx == _listSelectedAudioIdx) {
-                ckeckItemInList(idx, data)
-            }
+
+    ckeckItemInList = (idx) => {
+        $('.list-item > #list-item-checkbox').each((_, ele) => {
+            $(ele).prop('checked', false)
+            if (_ == idx) $(ele).prop('checked', true)
         })
+        ListSelectedAudioIdx = idx
+        updateCoverBackground(getSelectedAudio().picture)
+        updateCoverList(getSelectedAudio())
     }
+
+    $("#list-container").on('dblclick','.list-item', (e) => {
+        let idx = parseInt($(e.currentTarget).attr('idx'))
+        AppIpc.Send2Audio("Remote", "Current", Responds.CurrentList[idx])
+    })
+    
+    $("#list-container").on('click','.list-item', (e) => {
+        let idx = parseInt($(e.currentTarget).attr('idx'))
+        ckeckItemInList(idx)
+    })
+
+    $(window).on('keydown', (ev)=>{
+        if(CurrentBody!='list') return;
+        if (ListSelectedAudioIdx == null) return;
+        if(ev.keyCode==38){//ArrowUp
+            if (ListSelectedAudioIdx == 0) return;
+            ListSelectedAudioIdx -= 1;
+        }
+        if(ev.keyCode==40){//ArrowDown
+            if (ListSelectedAudioIdx == Responds.CurrentList.length - 1) return;
+            ListSelectedAudioIdx += 1;
+        }
+        ckeckItemInList(ListSelectedAudioIdx)
+    })
+
 }
+
+
+
+
+
+

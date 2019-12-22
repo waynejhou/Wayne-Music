@@ -50,6 +50,7 @@ function updatePlayPauseBtn(playbackState) {
         $("#audio-controls-playpause-btn").html('<i class="fas fa-play"></i>')
     };
 }
+
 if (!OnResponds.PlaybackState) {
     OnResponds.PlaybackState = (data) => {
         updatePlayPauseBtn(data)

@@ -1,25 +1,31 @@
 BodyCachedElements = {}
+OnBodyChanged = {};
+CurrentBody = null;
 function bodyCachedLoad(url) {
-    if (BodyCachedElements[url]) {
-        $('#body-container').children = BodyCachedElements[url]
-    } else {
-        $('#body-container').load(url, (result) => {
-            let cache = $(result)
-            console.log(cache.find('script'))
-            cache.find('script').remove()
-            console.log(cache[4])
-            BodyCachedElements[url] = cache
-        })
+    CurrentBody = url
+    if (!(BodyCachedElements[url] === undefined)) {
+        $('#body-container').empty().append(BodyCachedElements[url])
+        if (!!OnBodyChanged[url]) OnBodyChanged[url]();
+        return
     }
+    $.ajax({
+        type: "GET",
+        url: url,
+        async: true
+    }).done(function (html) {
+        BodyCachedElements[url] = $(html)
+        $('#body-container').empty().append(BodyCachedElements[url])
+        if (!!OnBodyChanged[url]) OnBodyChanged[url]();
+    });
 }
 
 
 $('button#page-changing-cover').click(() => {
-    $('#body-container').load('cover')
+    bodyCachedLoad('cover')
 })
 
 $('button#page-changing-list').click(() => {
-    $('#body-container').load('list')
+    bodyCachedLoad('list')
 })
 
 $('#audio-controls-playpause-btn').click(() => {

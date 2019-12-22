@@ -1,9 +1,7 @@
 
 OnResponds = {}
 Responds = {}
-IsShiftKeyHolding = false;
-On_Down_Press = null;
-On_Up_Press = null;
+
 
 let ws = new WebSocket(`ws://${window.location.host}`)
 AppIpc = new AppIPCRenderer(ws,
@@ -29,15 +27,3 @@ AppIpc.On("Respond", (request, data) => {
     }
 })
 
-window.addEventListener("keydown", (ev) => {
-    IsShiftKeyHolding = ev.shiftKey
-    if (ev.keyCode == 38) {
-        if (On_Up_Press) On_Up_Press(ev);
-    }
-    if (ev.keyCode == 40) {
-        if (On_Down_Press) On_Down_Press(ev);
-    }
-})
-window.addEventListener("keyup", (ev) => {
-    IsShiftKeyHolding = ev.shiftKey
-})
