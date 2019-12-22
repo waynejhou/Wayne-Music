@@ -21,6 +21,7 @@ export class AppIPCMessage {
 export class AppIPCMain {
     private _audioWindow: BrowserWindow = null;
     private _wsServer: WebSocketServer = null;
+    private _onContextMenu: ((msg:AppIPCMessage)=>void)[] = [];
 
     public constructor(audioWindow: BrowserWindow, wss: WebSocketServer) {
         this._audioWindow = audioWindow;
@@ -36,7 +37,13 @@ export class AppIPCMain {
                 let msg = <AppIPCMessage>JSON.parse(<string>data);
                 if (msg.Receiver == "Audio") {
                     this.Send(msg);
-                } else {
+                }
+                else if(msg.Receiver == "Main"){
+                    this._onContextMenu.forEach((callback)=>{
+                        callback(msg);
+                    })
+                } 
+                else {
                     console.log(`Message got from channel "${msg.Channel}" and without handling.`)
                 }
             })
@@ -57,4 +64,7 @@ export class AppIPCMain {
         this.Send(msg);
     }
 
+    public OnContextMenu(callback:(msg:AppIPCMessage)=>void){
+        this._onContextMenu.push(callback);
+    }
 }

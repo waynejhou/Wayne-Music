@@ -34,4 +34,19 @@ export class AppMenuGenerator {
             },
         ]
     }
+
+    public get ListContentMenuTemplate():MenuItemConstructorOptions[]{
+        return [
+            {
+                label: '&File',
+                submenu: [
+                    {
+                        label: "&Open Audio",
+                        click: () => { this._cmds.OpenDialog_Load_Play() }
+                    },
+                    this.CloseOrQuit
+                ]
+            }
+        ]
+    }
 }

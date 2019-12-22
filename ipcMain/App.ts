@@ -45,7 +45,7 @@ portfinder.getPort({
     stopPort: 65535
 }, (err, port) => { port });
 
-function createWindow(port:number) {
+function createWindow(port: number) {
     g.viewServer = viewApp.listen(port, "localhost", () => {
         console.log(`View Server running at http://localhost:${port}/`);
     })
@@ -113,21 +113,26 @@ function createWindow(port:number) {
         g.wsServer = null;
     })
     g.appMenuGen = new AppMenuGenerator(app, g.appCmdGen)
-    let template: MenuItemConstructorOptions[] = g.appMenuGen.MenuTemplate
-
-    Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+    let menu = Menu.buildFromTemplate(g.appMenuGen.MenuTemplate)
+    Menu.setApplicationMenu(menu)
+    let listContextMenu = Menu.buildFromTemplate(g.appMenuGen.ListContentMenuTemplate)
+    g.ipcMg.OnContextMenu((msg) => {
+        if (msg.Request == "Popup") {
+            listContextMenu.popup({ window: g.nativeWin })
+        }
+    })
 }
 
 // 當 Electron 完成初始化，並且準備好建立瀏覽器視窗時
 // 會呼叫這的方法
 // 有些 API 只能在這個事件發生後才能用。
-app.on('ready', ()=>{
+app.on('ready', () => {
     portfinder.getPortPromise({
         port: 9000,
         stopPort: 65535
-    }).then((port)=>{
+    }).then((port) => {
         createWindow(port)
-    }).catch((err)=>{
+    }).catch((err) => {
         console.log(err)
     })
 })
@@ -149,9 +154,9 @@ app.on('activate', () => {
         portfinder.getPortPromise({
             port: 9000,
             stopPort: 65535
-        }).then((port)=>{
+        }).then((port) => {
             createWindow(port)
-        }).catch((err)=>{
+        }).catch((err) => {
             console.log(err)
         })
     }

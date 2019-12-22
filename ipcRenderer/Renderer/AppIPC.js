@@ -27,13 +27,16 @@ class AppIPCRenderer {
     }
 
     Send(msg) {
-        if (msg.Receiver == "Audio") {
-            this._ws.send(JSON.stringify(msg))
-        }
+        this._ws.send(JSON.stringify(msg))
     }
 
     Send2Audio(action, request, data) {
         let msg = new AppIPCMessage("Audio", action, request);
+        msg.Data = data;
+        this.Send(msg);
+    }
+    Send2Main(action, request, data) {
+        let msg = new AppIPCMessage("Main", action, request);
         msg.Data = data;
         this.Send(msg);
     }

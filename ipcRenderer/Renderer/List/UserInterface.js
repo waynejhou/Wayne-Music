@@ -23,12 +23,12 @@ _: {
         updateCoverList(getSelectedAudio())
     }
 
-    $("#list-container").on('dblclick','.list-item', (e) => {
+    $("#body-container").on('dblclick','.list-item', (e) => {
         let idx = parseInt($(e.currentTarget).attr('idx'))
         AppIpc.Send2Audio("Remote", "Current", Responds.CurrentList[idx])
     })
     
-    $("#list-container").on('click','.list-item', (e) => {
+    $("#body-container").on('click','.list-item', (e) => {
         let idx = parseInt($(e.currentTarget).attr('idx'))
         ckeckItemInList(idx)
     })
@@ -45,6 +45,10 @@ _: {
             ListSelectedAudioIdx += 1;
         }
         ckeckItemInList(ListSelectedAudioIdx)
+    })
+
+    $("#body-container").on('contextmenu','#list-container',(ev)=>{
+        AppIpc.Send2Main("ContextMenu", "Popup", null);
     })
 
 }
