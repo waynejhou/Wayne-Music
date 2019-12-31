@@ -52,7 +52,6 @@ export class AppIPCMain {
     }
 
     public Send(msg: AppIPCMessage) {
-        console.log(`Send ${msg.Channel}`)
         if (msg.Receiver == "Audio") {
             this._audioWindow.webContents.send("FromWebSocket", msg)
         }

@@ -37,7 +37,6 @@ class AppIPCRenderer {
     }
 
     Send(msg) {
-        console.log(`Renderer Send "${msg.Receiver}" Action "${msg.Action}" Request "${msg.Request}" Data "${msg.Data}"`)
         this._ws.send(JSON.stringify(msg))
     }
 
