@@ -41,8 +41,10 @@ _: {
         }
 
         OnBodyChanged.list = () => {
-            updateCoverBackground(getSelectedAudio().picture)
-            updateCoverList(getSelectedAudio())
+            let sa = getSelectedAudio()
+            if(typeof sa == "undefined") return;
+            updateCoverBackground(sa.picture)
+            updateCoverList(sa)
         }
     }
 

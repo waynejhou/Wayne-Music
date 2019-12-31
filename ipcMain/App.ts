@@ -10,11 +10,14 @@ import * as portfinder from 'portfinder'
 // ./viewExpress: view(UI 網頁) Server 路由設定
 import viewExpress from './viewExpress';
 // ./AppIPCMain: 簡化 IPC 溝通
-import { AppIPCMain } from './AppIPCMain'
+import { AppIPCMain, AppIPCMessage } from './AppIPCMain'
 // ./AppMenuGenerator: App Menu 的設定
-import { AppMenuGenerator } from './AppMenuGenerator'
+import { AppMenuCenter } from './AppIPCHosts/AppMenuCenter';
 // ./AppMenuGenerator: App 所會用到的指令(函式)
-import { AppCommandsGenerator } from './AppCommandsGenerator'
+import { AppCommandCenter } from './AppIPCHosts/AppCommandCenter'
+
+import { AppCrossProcessVariables } from './AppIPCHosts/AppCrossProcessVariables';
+import { IAppIPCHost } from './AppIPCHosts/IAppIPCHost';
 
 // Global 介面擴充，以參照重要物件
 interface Global extends NodeJS.Global {
@@ -23,8 +26,9 @@ interface Global extends NodeJS.Global {
     audioBgWin: BrowserWindow,
     wsServer: WebSocketServer,
     ipcMg: AppIPCMain,
-    appCmdGen: AppCommandsGenerator,
-    appMenuGen: AppMenuGenerator
+    appCmdCenter: AppCommandCenter,
+    appMenuCenter: AppMenuCenter,
+    appCrossProcessVariables: AppCrossProcessVariables
 }
 function GetGlobal(): Global { return <Global>global }
 var g = GetGlobal();
@@ -33,8 +37,8 @@ var g = GetGlobal();
 (<Global>global).audioBgWin = null;
 (<Global>global).wsServer = null;
 (<Global>global).ipcMg = null;
-(<Global>global).appCmdGen = null;
-(<Global>global).appMenuGen = null;
+(<Global>global).appCmdCenter = null;
+(<Global>global).appMenuCenter = null;
 
 //取得 Express 路由與尋找可用的 Port
 const viewApp = viewExpress.getPresetExpressApp(app)
@@ -62,6 +66,12 @@ function createWindow(port: number) {
     })
 
     g.ipcMg = new AppIPCMain(g.audioBgWin, g.wsServer);
+    g.ipcMg.RegisterHost(<IAppIPCHost>{
+        HostName: "Audio",
+        OnGotMsg(msg: AppIPCMessage) {
+            g.audioBgWin.webContents.send("FromWebSocket", msg );
+        }
+    })
 
 
 
@@ -83,7 +93,7 @@ function createWindow(port: number) {
             devTools: !app.isPackaged
         }
     })
-    g.appCmdGen = new AppCommandsGenerator(app, g.nativeWin, g.ipcMg);
+    g.appCmdCenter = new AppCommandCenter(app, g.nativeWin, g.ipcMg);
 
     // and load the index.html of the app.
     g.nativeWin.loadURL(`http://localhost:${port}`)
@@ -99,8 +109,8 @@ function createWindow(port: number) {
         // 你可能會將它們存成陣列，現在該是時候清除相關的物件了。
         g.nativeWin = null;
         g.ipcMg = null;
-        g.appMenuGen = null;
-        g.appCmdGen = null;
+        g.appMenuCenter = null;
+        g.appCmdCenter = null;
         g.audioBgWin.destroy();
         g.audioBgWin = null;
         g.viewServer.close(() => {
@@ -112,15 +122,13 @@ function createWindow(port: number) {
         });
         g.wsServer = null;
     })
-    g.appMenuGen = new AppMenuGenerator(app, g.appCmdGen)
-    let menu = Menu.buildFromTemplate(g.appMenuGen.MenuTemplate)
-    Menu.setApplicationMenu(menu)
-    let listContextMenu = Menu.buildFromTemplate(g.appMenuGen.ListContentMenuTemplate)
-    g.ipcMg.OnContextMenu((msg) => {
-        if (msg.Request == "Popup") {
-            listContextMenu.popup({ window: g.nativeWin })
-        }
-    })
+    g.appMenuCenter = new AppMenuCenter(app, g.appCmdCenter)
+    Menu.setApplicationMenu(g.appMenuCenter.Menus.Index)
+    g.ipcMg.RegisterHost(g.appMenuCenter)
+
+    g.appCrossProcessVariables = new AppCrossProcessVariables(g.ipcMg)
+    g.ipcMg.RegisterHost(g.appCrossProcessVariables)
+
 }
 
 // 當 Electron 完成初始化，並且準備好建立瀏覽器視窗時

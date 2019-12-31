@@ -2,7 +2,9 @@ BodyCachedElements = {}
 OnBodyChanged = {};
 CurrentBody = null;
 function bodyCachedLoad(url) {
+    if(CurrentBody==url) return;
     CurrentBody = url
+    AppIpc.Send2CrossProcessVariables("Set", "CurrentBody", CurrentBody)
     if (!(BodyCachedElements[url] === undefined)) {
         $('#body-container').empty().append(BodyCachedElements[url])
         if (!!OnBodyChanged[url]) OnBodyChanged[url]();

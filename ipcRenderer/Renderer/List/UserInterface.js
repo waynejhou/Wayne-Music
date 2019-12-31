@@ -16,11 +16,18 @@ _: {
     ckeckItemInList = (idx) => {
         $('.list-item > #list-item-checkbox').each((_, ele) => {
             $(ele).prop('checked', false)
-            if (_ == idx) $(ele).prop('checked', true)
+            if (_ == idx){
+                $(ele).prop('checked', true)
+                $(`#list-item-${idx}`).each((idx, ele)=>{
+                    ele.selected=true
+                })
+            }
         })
         ListSelectedAudioIdx = idx
-        updateCoverBackground(getSelectedAudio().picture)
-        updateCoverList(getSelectedAudio())
+        let sa = getSelectedAudio()
+        if(typeof sa == "undefined") return;
+        updateCoverBackground(sa.picture)
+        updateCoverList(sa)
     }
 
     $("#body-container").on('dblclick','.list-item', (e) => {
@@ -48,7 +55,7 @@ _: {
     })
 
     $("#body-container").on('contextmenu','#list-container',(ev)=>{
-        AppIpc.Send2Main("ContextMenu", "Popup", null);
+        AppIpc.Send2MenuCenter("Popup", "List", null);
     })
 
 }

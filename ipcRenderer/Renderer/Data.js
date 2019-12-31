@@ -1,4 +1,3 @@
-
 OnResponds = {}
 Responds = {}
 
@@ -13,17 +12,20 @@ AppIpc = new AppIPCRenderer(ws,
         AppIpc.Send2Audio("Query", "Seek", null)
         AppIpc.Send2Audio("Query", "CurrentList", null)
         AppIpc.Send2Audio("Query", "Volume", null)
+        AppIpc.Send2CrossProcessVariables("Get", "CurrentBody", null)
     },
     (ev) => {
         console.log('close connection')
     })
-AppIpc.On("Respond", (request, data) => {
+
+function ReceiveRespond(request, data){
     let cb = OnResponds[request]
-    console.log(`Got ${request} Respond`)
     Responds[request] = data
-    console.log(Responds[request])
     if (cb) {
         cb(data);
     }
-})
+}
+
+AppIpc.OnGotMsgFrom("Audio", "Respond", ReceiveRespond)
+
 

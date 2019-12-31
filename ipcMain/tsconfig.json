@@ -9,6 +9,6 @@
         "outDir": "../dist"
     },
     "include": [
-        "*.ts"
+        "*.ts", "AppIPCHosts/AppMenuCenter.ts", "AppIPCHosts/AppCommandCenter.ts", "AppIPCHosts/AppCrossProcessVariables.ts", "AppIPCHosts/IAppIPCHost.ts"
     ],
 }

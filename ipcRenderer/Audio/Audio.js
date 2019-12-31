@@ -52,7 +52,7 @@ class AudioStateManager {
         }
         this._howl = new Howl({
             src: [value.url],
-            volume: 0.25,
+            volume: this._volume,
             loop: true
         })
         this._howl.once('load', () => {
@@ -135,16 +135,22 @@ class AudioStateManager {
 
 let manager = new AudioStateManager();
 
-appIpc.On('Remote', (request, data) => {
-    console.log(`Got Remote "${request}"`)
-    console.log(data)
-    manager[request] = data
-})
-appIpc.On('Query', (request, data) => {
+function QueryAudioManager(request, data){
     appIpc.Send2Renderer("Respond", request, manager[request])
+}
+
+function RemoteAudioManager(request, data){
+    manager[request] = data
+}
+
+appIpc.OnGotMsgFrom("Renderer", "Query", QueryAudioManager)
+
+appIpc.OnGotMsgFrom("Renderer", "Remote", RemoteAudioManager)
+appIpc.OnGotMsgFrom("CmdCenter", "Remote", RemoteAudioManager)
+
+
+appIpc.OnGotMsgFrom("CmdCenter", "Add", (req, data)=>{
+
+    manager[req].push(data)
 })
-appIpc.On('Add', (request, data) => {
-    console.log(`Got Add "${request}"`)
-    console.log(data)
-    manager[request].push(data)
-})
+

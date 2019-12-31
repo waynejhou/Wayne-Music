@@ -1,7 +1,8 @@
 import { dialog, App, FileFilter, BrowserWindow } from 'electron'
 import * as mm from 'music-metadata'
-import { AudioData } from './AudioData'
-import { AppIPCMain, AppIPCMessage } from './AppIPCMain'
+import { AudioData } from '../AudioData'
+import { AppIPCMain, AppIPCMessage } from '../AppIPCMain'
+import { IAppIPCHost } from "./IAppIPCHost"
 import * as path from 'path'
 import * as fs from 'fs'
 import * as crypto from 'crypto';
@@ -43,7 +44,9 @@ class CoverCacheList {
     [fileHash: string]: string
 }
 
-export class AppCommandsGenerator {
+export class AppCommandCenter implements IAppIPCHost {
+    public HostName: string = "CmdCenter"
+    public OnGotMsg: (msg: AppIPCMessage) => void;
     private _app: App = null;
     private _win: BrowserWindow = null;
     private _ipcMg: AppIPCMain = null;
@@ -61,7 +64,7 @@ export class AppCommandsGenerator {
         console.log(this._coverCachePath)
         fs.access(this._coverCachePath, fs.constants.F_OK, (err) => {
             // dir not exist
-            if(err){
+            if (err) {
                 fs.mkdirSync(this._coverCachePath, { recursive: true });
             }
         })
@@ -80,9 +83,17 @@ export class AppCommandsGenerator {
                 this.LoadAudioFile(filePath, (metadata, picture) => {
                     let data = new AudioData(filePath, metadata, picture);
                     if (idx == 0) {
-                        this._ipcMg.Send2Audio("Remote", "Current", data);
+                        this._ipcMg.Send((() => {
+                            let ret = new AppIPCMessage(this.HostName, "Audio", "Remote", "Current");
+                            ret.Data = data;
+                            return ret;
+                        })());
                     }
-                    this._ipcMg.Send2Audio("Add", "CurrentList", data);
+                    this._ipcMg.Send((() => {
+                        let ret = new AppIPCMessage(this.HostName, "Audio", "Add", "CurrentList");
+                        ret.Data = data;
+                        return ret;
+                    })());
                 })
             })
         });
@@ -112,7 +123,7 @@ export class AppCommandsGenerator {
             if (hasCache) {
                 callback(metadata, `${this._coverCacheListFiles[uid]}.png`)
             } else {
-                if (metadata.common.picture&&metadata.common.picture.length > 0) {
+                if (metadata.common.picture && metadata.common.picture.length > 0) {
                     let pic = metadata.common.picture[0]
                     sharp(pic.data).metadata().then((imgmetadata) => {
                         if (imgmetadata.width > 500 || imgmetadata.height > 500) {

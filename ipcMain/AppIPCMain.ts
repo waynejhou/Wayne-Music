@@ -1,27 +1,26 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, WebContents } from "electron";
 import { Server as WebSocketServer } from 'ws'
-
-function isArray(what: any) {
-    return Object.prototype.toString.call(what) === '[object Array]';
-}
+import { IAppIPCHost } from "./AppIPCHosts/IAppIPCHost";
 
 export class AppIPCMessage {
+    public Sender: string = null;
     public Receiver: string = null;
     public Action: string = null;
     public Request: string = null;
     public Data: any = null;
     public Channel: string = null;
-    constructor(receiver: string, action: string, request: string) {
+    constructor(sender: string, receiver: string, action: string, request: string) {
+        this.Sender = sender
         this.Receiver = receiver
         this.Action = action
         this.Request = request
-        this.Channel = `${this.Receiver}-${this.Action}-${this.Request}`
+        this.Channel = `${this.Sender}-${this.Receiver}-${this.Action}-${this.Request}`
     }
 }
 export class AppIPCMain {
     private _audioWindow: BrowserWindow = null;
     private _wsServer: WebSocketServer = null;
-    private _onContextMenu: ((msg:AppIPCMessage)=>void)[] = [];
+    private _hosts: IAppIPCHost[] = [];
 
     public constructor(audioWindow: BrowserWindow, wss: WebSocketServer) {
         this._audioWindow = audioWindow;
@@ -35,16 +34,15 @@ export class AppIPCMain {
             console.log('Client connected')
             socket.on("message", (data) => {
                 let msg = <AppIPCMessage>JSON.parse(<string>data);
-                if (msg.Receiver == "Audio") {
-                    this.Send(msg);
-                }
-                else if(msg.Receiver == "Main"){
-                    this._onContextMenu.forEach((callback)=>{
-                        callback(msg);
-                    })
-                } 
-                else {
-                    console.log(`Message got from channel "${msg.Channel}" and without handling.`)
+                let receiverExist = false;
+                this._hosts.forEach((host) => {
+                    if (host.HostName == msg.Receiver) {
+                        receiverExist = true
+                        host.OnGotMsg(msg);
+                    }
+                })
+                if (!receiverExist) {
+                    console.log(`Message got on channel "${msg.Channel}" without handling.`)
                 }
             })
             socket.on('close', () => {
@@ -54,17 +52,20 @@ export class AppIPCMain {
     }
 
     public Send(msg: AppIPCMessage) {
+        console.log(`Send ${msg.Channel}`)
         if (msg.Receiver == "Audio") {
             this._audioWindow.webContents.send("FromWebSocket", msg)
         }
-    }
-    public Send2Audio(action: string, request: string, data: any) {
-        let msg = new AppIPCMessage("Audio", action, request);
-        msg.Data = data;
-        this.Send(msg);
+        if (msg.Receiver == "Renderer") {
+            this._wsServer.clients.forEach((client) => {
+                client.send(JSON.stringify(msg))
+            })
+        }
     }
 
-    public OnContextMenu(callback:(msg:AppIPCMessage)=>void){
-        this._onContextMenu.push(callback);
+    public RegisterHost(host: IAppIPCHost) {
+        this._hosts.push(host)
     }
+
+
 }

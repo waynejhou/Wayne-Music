@@ -154,6 +154,7 @@ i.unicode-symbol {
 .list-item {
     display: grid;
     max-width: 100%;
+    padding: 10px 0px;
     font-size: 2.0rem;
     white-space: nowrap;
     grid-template-columns: min-content min-content 1fr minmax(40%, 40%) fit-content(100px);

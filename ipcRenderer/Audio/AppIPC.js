@@ -4,24 +4,34 @@ class AppIPCMessage {
     Request = null;
     Data = null;
     Channel = null;
-    constructor(receiver, action, request) {
+    constructor(sender, receiver, action, request) {
+        this.Sender = sender
         this.Receiver = receiver
         this.Action = action
         this.Request = request
-        this.Channel = `${this.Receiver}-${this.Action}-${this.Request}`
+        this.Channel = `${this.Sender}-${this.Receiver}-${this.Action}-${this.Request}`
     }
 }
 
 class AppIPCAudio {
     _wsServer = null;
     _ipcRenderer = null;
-    _onCallbacks = {}
+    _onGotMsgFrom = {};
     constructor(wss, ipcRenderer) {
         this._wsServer = wss
         this._ipcRenderer = ipcRenderer
         this._ipcRenderer.on("FromWebSocket", (ev, msg) => {
             if (msg.Receiver != "Audio") return
-            if (this._onCallbacks[msg.Action]) this._onCallbacks[msg.Action](msg.Request, msg.Data);
+            let sender_actions = this._onGotMsgFrom[msg.Sender]
+            if (sender_actions) {
+                if(sender_actions[msg.Action]){
+                    this._onGotMsgFrom[msg.Sender][msg.Action](msg.Request, msg.Data);
+                }else{
+                    console.log(`Message got on channel "${msg.Channel}" without  on this action.`)
+                }
+            } else {
+                console.log(`Message got on channel "${msg.Channel}" without handling on this sender.`)
+            }
         });
     }
 
@@ -34,12 +44,16 @@ class AppIPCAudio {
     }
 
     Send2Renderer(action, request, data) {
-        let msg = new AppIPCMessage("Renderer", action, request);
+        let msg = new AppIPCMessage("Audio", "Renderer", action, request);
         msg.Data = data;
         this.Send(msg);
     }
-    On(action, callback) {
-        this._onCallbacks[action] = callback;
+    
+    OnGotMsgFrom(sender, action, callback) {
+        if (!this._onGotMsgFrom[sender]) {
+            this._onGotMsgFrom[sender] = {}
+        }
+        this._onGotMsgFrom[sender][action] = callback;
     }
 
 }
