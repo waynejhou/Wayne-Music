@@ -3,6 +3,5 @@ build/*
 node_modules/*
 www/material-design-icons-3.0.1/*
 www/js/jquery-3.4.1.*.js
-www/dist/*
 dist/*
 Cover Cache

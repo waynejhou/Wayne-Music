@@ -7,8 +7,8 @@ if (-not $clientOnly) {
     Write-Host "rm dist"
     Remove-Item ./dist -Force -recurse 
 }
-Write-Host "rm www/dist"
-Remove-Item ./www/dist -Force -recurse 
+#Write-Host "rm www/dist"
+#Remove-Item ./www/dist -Force -recurse 
 
 #  copy d.ts to let tsc known the type
 #Write-Host "cp shared renderer"
@@ -22,8 +22,8 @@ if (-not $clientOnly) {
 #  tsc renderer
 #Write-Host "tsc renderer"
 #tsc -p ./ipcRenderer
-Write-Host "Copy Renderer js to dist"
-Copy-Item ./ipcRenderer  -Destination ./www/dist  -force -recurse 
+#Write-Host "Copy Renderer js to dist"
+#Copy-Item ./ipcRenderer  -Destination ./www/dist  -force -recurse 
 
 # copy renderer code for debug exectuion
 # When debug executting, "require" provide by electron in renderer think path start from system current path
