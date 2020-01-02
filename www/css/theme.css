@@ -28,8 +28,11 @@ body {
 .material-icons {
     color: var(--main-fg-color);
     text-shadow: 2px 2px 3px var(--main-bg-color);
+    font-size: inherit;
+}
+
+#left-side-dock i {
     font-size: 30px;
-    margin: auto;
 }
 
 
@@ -110,24 +113,6 @@ body {
     background-size: contain;
     background-position: center;
     filter: blur(25px);
-}
-
-#repeat-btn-icon-layout {
-    display: grid;
-}
-
-#repeat-btn-icon {
-    grid-column-start: 1;
-    grid-column-end: 3;
-    grid-row-start: 1;
-    grid-row-end: 3;
-}
-
-#repeat-btn-addition {
-    grid-column: 1;
-    grid-row: 2;
-    color: var(--main-fg-color);
-    font-size: 1rem;
 }
 
 #audio-controls-slider-value {
