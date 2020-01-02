@@ -6,17 +6,17 @@
     <script type='text/javascript'>
         window.jQuery = window.$ = require('jquery');
     </script>
+    <link rel="stylesheet" href="material-design-icons-3.0.1/iconfont/material-icons.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="fontawesome-free-5.11.2-web/css/all.css">
 </head>
 
 <body>
     <div id="root-container">
         <div id="left-side-dock" class="card layer-transparent">
-            <button id="page-changing-cover" class="plain sqr1"><i class="fas fa-image"></i></button>
-            <button id="page-changing-list" class="plain sqr1"><i class="fas fa-list"></i></button>
-            <button id="page-changing-lyric" class="plain sqr1"><i class="fas fa-align-left"></i></button>
+            <button id="page-changing-cover" class="plain sqr1"><i class="material-icons">image</i></button>
+            <button id="page-changing-list" class="plain sqr1"><i class="material-icons">list</i></button>
+            <button id="page-changing-lyric" class="plain sqr1"><i class="material-icons">format_align_left</i></button>
         </div>
         <div id="bottom-side-dock" class="card layer-transparent">
             <div id="audio-controls-container">
@@ -27,22 +27,19 @@
                 <div id="audio-controls" class="card layer-transparent">
                     <div id="audio-controls-btns" class="card">
                         <button id="audio-controls-playpause-btn" class="plain sqr1">
-                            <i class="fas fa-play"></i>
+                            <i class="material-icons">play_arrow</i>
                         </button>
                         <button id="audio-controls-lastone-btn" class="plain sqr2">
-                            <i class="fas fa-step-backward"></i>
+                            <i class="material-icons">fast_forward</i>
                         </button>
                         <button id="audio-controls-nextone-btn" class="plain sqr2">
-                            <i class="fas fa-step-forward"></i></i>
+                            <i class="material-icons">fast_rewind</i>
                         </button>
                         <button id="audio-controls-random-btn" class="plain sqr3">
-                            <i class="fas fa-random"></i>
+                            <i class="material-icons">transform</i>
                         </button>
                         <button id="audio-controls-repeat-btn" class="plain sqr3">
-                            <div id="repeat-btn-icon-layout">
-                                <i id="repeat-btn-icon" class="unicode-symbol">&#x2B8C;</i>
-                                <span id="repeat-btn-addition">1</span>
-                            </div>
+                            <i class="material-icons">repeat</i>
                         </button>
                         <input type="range" id="audio-controls-volume" class="slider" min="0" max="1000"
                             value="0"></input>

@@ -25,18 +25,13 @@ body {
     background-color: var(--main-bg-color);
 }
 
-i.fas {
+.material-icons {
     color: var(--main-fg-color);
     text-shadow: 2px 2px 3px var(--main-bg-color);
+    font-size: 30px;
+    margin: auto;
 }
 
-i.unicode-symbol {
-    color: var(--main-fg-color);
-    font-style: normal;
-    font-weight: 900;
-    line-height: 1;
-    text-shadow: 2px 2px 3px var(--main-bg-color);
-}
 
 .card {
     margin: 5px;

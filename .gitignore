@@ -1,7 +1,7 @@
 .vscode/settings.json
 build/*
 node_modules/*
-www/fontawesome-free-5.11.2-web/*
+www/material-design-icons-3.0.1/*
 www/js/jquery-3.4.1.*.js
 www/dist/*
 dist/*

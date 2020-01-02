@@ -45,9 +45,9 @@ if (!OnResponds.Current) {
 
 function updatePlayPauseBtn(playbackState) {
     if (playbackState == 'playback-playing') {
-        $("#audio-controls-playpause-btn").html('<i class="fas fa-pause"></i>')
+        $("#audio-controls-playpause-btn").html(`<i class="material-icons">play_arrow</i>`)
     } else {
-        $("#audio-controls-playpause-btn").html('<i class="fas fa-play"></i>')
+        $("#audio-controls-playpause-btn").html(`<i class="material-icons">pause</i>`)
     };
 }
 
@@ -60,14 +60,11 @@ if (!OnResponds.PlaybackState) {
 function updateRepeatBtn(loopState) {
     if (loopState) {
         $('#audio-controls-repeat-btn').html(
-            '<div id="repeat-btn-icon-layout">' +
-            '    <i id="repeat-btn-icon" class="unicode-symbol">&#x2B8C;</i>' +
-            '    <span id="repeat-btn-addition">1</span>' +
-            '</div>'
+            `<i class="material-icons">repeat_one</i>`
         )
     } else {
         $('#audio-controls-repeat-btn').html(
-            '<i class="unicode-symbol">&#x2B8C;</i>'
+            `<i class="material-icons">repeat</i>`
         )
     }
 }

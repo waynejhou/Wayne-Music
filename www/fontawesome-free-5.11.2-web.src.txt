@@ -1,2 +1,0 @@
-fontawesome-free-5.11.2-web/*
-https://use.fontawesome.com/releases/v5.11.2/fontawesome-free-5.11.2-web.zip
