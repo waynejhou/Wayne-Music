@@ -4,6 +4,7 @@ _: {
     
     updateCurrentList = (list) => {
         $('#list-container').empty()
+        $('#list-container').prop("mode", "normal")
         let a = ["sa", "asd"]
         let elements = list.map((data, idx) => {
             let playing = ""
@@ -12,21 +13,21 @@ _: {
             }
             return $(`
             <div id="list-item-${idx}" idx=${idx} class="list-item">
-                <input type="checkbox" id="list-item-checkbox" class="list-item-property"></input>
+                <button id="list-item-checkbox" class="background-transparent list-item-property"><i class="material-icons"></i></button>
                 <span id="list-item-idx" class="list-item-property">${idx + 1}.</span>
                 <span id="list-item-playing" class="list-item-property">${playing}</span>
                 <span id="list-item-title" class="list-item-property">${data.title}</span>
                 <span id="list-item-album" class="list-item-property">${data.album}</span>
                 <span id="list-item-duration" class="list-item-property">${duration2string(data.duration)}</span>
-                <span id="list-item-border" class="list-item-property"></span>
             </div>
             `)
         })
-        $('#list-container').append(
-            elements
-        )
+        $('#list-container').append(elements)
     }
 
+    $('#body-container').on("change", '.list-item', (ev)=>{
+        console.log(ev)
+    })
 
     if (!OnResponds.CurrentList) {
             OnResponds.CurrentList = (list) => {

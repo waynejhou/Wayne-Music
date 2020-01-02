@@ -7,6 +7,7 @@
     --main-layer-transparent-hover: rgba(255, 255, 255, 0.2);
     --main-layer-transparent-hover-d: rgba(255, 255, 255, 0.3);
     --main-layer-transparent-active: rgba(255, 127, 80, 0.5);
+    --main-layer-transparent-active-hover: rgba(255, 188, 163, 0.5);
 }
 
 html, body {
@@ -35,10 +36,15 @@ body {
     font-size: 30px;
 }
 
-
 .card {
     margin: 5px;
     border-radius: 5px;
+}
+
+.background-transparent {
+    border: transparent;
+    background-color: transparent;
+    font-size: 20px;
 }
 
 .layer-transparent {
@@ -145,8 +151,23 @@ body {
     background-color: var(--main-layer-transparent);
 }
 
+.list-item[got_selected=true]{
+    background-color: var(--main-layer-transparent-active);
+}
+
 .list-item:hover {
     background-color: var(--main-layer-transparent-hover);
+}
+
+.list-item[got_selected=true]:hover{
+    background-color: var(--main-layer-transparent-active-hover);
+}
+
+.list-item[got_selected=true]>#list-item-checkbox>.material-icons::before{
+    content: 'check_box';
+}
+.list-item[got_selected=false]>#list-item-checkbox>.material-icons::before{
+    content: 'check_box_outline_blank';
 }
 
 .list-item-property {
@@ -160,22 +181,22 @@ body {
     grid-column: 1;
     opacity: 1;
     cursor: pointer;
-    z-index: -1;
+    z-index: 1;
 }
 
-.list-item:hover>#list-item-idx {
+#list-container[mode=normal] #list-item-idx {
+    opacity: 1;
+}
+#list-container[mode=selection] #list-item-idx {
     opacity: 0;
 }
 
 #list-item-checkbox {
-    margin-left: 10px;
-    margin-top: 10px;
     grid-column: 1;
     opacity: 0;
-    cursor: pointer;
 }
 
-.list-item:hover>#list-item-checkbox {
+#list-container[mode=selection] #list-item-checkbox {
     opacity: 1;
 }
 
@@ -194,16 +215,6 @@ body {
 
 #list-item-duration {
     grid-column: 5;
-}
-
-#list-item-border {
-    grid-column-start: 1;
-    grid-column-end: 6;
-    z-index: -1;
-}
-
-#list-item-checkbox:checked~#list-item-border {
-    background-color: var(--main-layer-transparent-active);
 }
 
 .slider {

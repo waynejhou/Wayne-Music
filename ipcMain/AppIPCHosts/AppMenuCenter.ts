@@ -7,7 +7,7 @@ export class AppMenuCenter implements IAppIPCHost {
     HostName: string = "MenuCenter";
     private _app: App = null;
     private _cmds: AppCommandCenter = null;
-
+    private _cmdArgs:any = null;
     private _isMac: boolean = process.platform === 'darwin'
     private get MacMenuHeaderTemplate(): MenuItemConstructorOptions[] {
         return (this._isMac ? [{
@@ -34,7 +34,7 @@ export class AppMenuCenter implements IAppIPCHost {
                     submenu: [
                         {
                             label: "&Open Audio",
-                            click: () => { this._cmds.OpenDialog_Load_Play() }
+                            click: () => { this._cmds.OpenDialog_Load_Play(this._cmdArgs) }
                         },
                         this.CloseOrQuit
                     ]
@@ -43,14 +43,19 @@ export class AppMenuCenter implements IAppIPCHost {
         ),
         List: Menu.buildFromTemplate([
             {
-                label: "&Open Audio",
-                click: () => { this._cmds.OpenDialog_Load_Play() }
+                label: "Remove &Selected Item",
+                click: () => { this._cmds.RemoveAudioInCurrentListByIdxs(this._cmdArgs) }
+            },
+            {
+                label: "Remove &All Item",
+                click: () => { this._cmds.RemoveAudioInCurrentListByIdxs(this._cmdArgs) }
             }
         ])
     };
 
     public OnGotMsg(msg: AppIPCMessage): any {
         if (typeof this.Menus[msg.Request] === undefined) return;
+        this._cmdArgs = msg.Data
         if (msg.Action == 'Popup') {
             this.Menus[msg.Request].popup()
         }

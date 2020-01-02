@@ -76,24 +76,24 @@ export class AppCommandCenter implements IAppIPCHost {
             this._coverCacheListFiles = <CoverCacheList>JSON.parse(fs.readFileSync(this._coverCacheListFilePath).toString())
         })
     }
-    public OpenDialog_Load_Play(): void {
+    private Send2Audio(action:string, request:string, data:any){
+        this._ipcMg.Send((() => {
+            let ret = new AppIPCMessage(this.HostName, "Audio", action, request);
+            ret.Data = data;
+            return ret;
+        })());
+    }
+
+    public OpenDialog_Load_Play(args:any): void {
         this.OpenDialog((result) => {
             if (result.canceled) return;
             result.filePaths.forEach((filePath, idx) => {
                 this.LoadAudioFile(filePath, (metadata, picture) => {
                     let data = new AudioData(filePath, metadata, picture);
                     if (idx == 0) {
-                        this._ipcMg.Send((() => {
-                            let ret = new AppIPCMessage(this.HostName, "Audio", "Remote", "Current");
-                            ret.Data = data;
-                            return ret;
-                        })());
+                        this.Send2Audio("Remote", "Current", data)
                     }
-                    this._ipcMg.Send((() => {
-                        let ret = new AppIPCMessage(this.HostName, "Audio", "Add", "CurrentList");
-                        ret.Data = data;
-                        return ret;
-                    })());
+                    this.Send2Audio("Add", "CurrentList", data)
                 })
             })
         });
@@ -160,5 +160,9 @@ export class AppCommandCenter implements IAppIPCHost {
         })
     }
 
+    public RemoveAudioInCurrentListByIdxs(args:any){
+        let idxs = <Array<Number>>args["idxs"]
+        this.Send2Audio("RemoveByIdxs", "CurrentList", idxs)
+    }
 
 }

@@ -150,7 +150,13 @@ appIpc.OnGotMsgFrom("CmdCenter", "Remote", RemoteAudioManager)
 
 
 appIpc.OnGotMsgFrom("CmdCenter", "Add", (req, data)=>{
-
     manager[req].push(data)
+})
+appIpc.OnGotMsgFrom("CmdCenter", "RemoveByIdxs", (req, idxs)=>{
+    idxs.reverse()
+    idxs.forEach(idx => {
+        manager[req].splice(idx,1)
+    });
+    appIpc.Send2Renderer("Respond", req, manager[req])
 })
 
