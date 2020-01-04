@@ -5,7 +5,7 @@
     "main": "dist/App.js",
     "scripts": {
         "start": "electron .",
-        "dist": "pwsh ./budscrp.ps1&& electron-builder"
+        "dist": "pwsh ./budscrp.ps1 && electron-builder"
     },
     "author": "Wayne Jhou",
     "devDependencies": {
@@ -32,6 +32,7 @@
         "productName": "electron-build",
         "files": [
             "dist/*",
+            "dist/**/*",
             "www/*",
             "www/**/*",
             "views/*"
