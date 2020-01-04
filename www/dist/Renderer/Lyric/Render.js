@@ -125,7 +125,7 @@ _: {
     let lastIndex = -1;
     OnSeekChange.push((seek) => {
         if (!lyricElements) return;
-        let nowIdx = GetLyricIdxFromSeek(Responds.Lyric, seek)
+        let nowIdx = GetLyricIdxFromSeek(Responds.Lyric.data, seek)
         if (nowIdx == -1) return
         let viewH = $('#lyric-wrapper').height()
         let viewCY = viewH / 2
@@ -134,11 +134,11 @@ _: {
             if (nowIdx < lyricElements.length) lyricElements[nowIdx].attr("highlight", () => { return true })
         }
         lastIndex = nowIdx
-        let nowLyricTime = Responds.Lyric[nowIdx].timeTag
+        let nowLyricTime = Responds.Lyric.data[nowIdx].timeTag
         let nowLyricH = lyricElements[nowIdx].outerHeight()
         let nextLyricTime = Infinity
         if (nowIdx != Responds.Lyric.length - 1) {
-            nextLyricTime = Responds.Lyric[nowIdx + 1].timeTag
+            nextLyricTime = Responds.Lyric.data[nowIdx + 1].timeTag
         }
         let nowLyricDuration = nextLyricTime - nowLyricTime
         let passedH = lyricElements[nowIdx].position().top
@@ -155,7 +155,7 @@ _: {
 
     if (!OnResponds.Lyric) {
         OnResponds.Lyric = (lyric) => {
-            updateLyric(lyric)
+            updateLyric(lyric.data)
         }
     }
 
@@ -164,7 +164,10 @@ _: {
             updateCoverBackground(Responds.Current.picture)
             updateCoverBottomright(Responds.Current.picture)
         }
-        updateLyric(Responds.Lyric)
+        if(Responds.Lyric){
+            updateLyric(Responds.Lyric.data)
+        }
+        
     }
 
 

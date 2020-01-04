@@ -133,7 +133,7 @@ class AudioStateManager {
         appIpc.Send2Renderer("Respond", 'Volume', val)
     }
 
-    _lyric = null;
+    _lyric = {path:null,data:null};
     get Lyric() {
         return this._lyric;
     }

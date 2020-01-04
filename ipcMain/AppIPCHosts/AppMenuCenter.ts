@@ -50,6 +50,12 @@ export class AppMenuCenter implements IAppIPCHost {
                 label: "Remove &All Item",
                 click: () => { this._cmds.RemoveAllAudioInCurrentList(this._cmdArgs) }
             }
+        ]),
+        Lyric:  Menu.buildFromTemplate([
+            {
+                label: "&Open LRC file External",
+                click: () => { this._cmds.OpenLRCFileAtExternal(this._cmdArgs) }
+            }
         ])
     };
 

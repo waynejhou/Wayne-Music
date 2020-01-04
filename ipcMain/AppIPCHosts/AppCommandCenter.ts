@@ -1,4 +1,4 @@
-import { dialog, App, FileFilter, BrowserWindow } from 'electron'
+import { dialog, App, FileFilter, BrowserWindow, shell } from 'electron'
 import * as mm from 'music-metadata'
 import { AudioData } from '../AudioData'
 import { AppIPCMain, AppIPCMessage } from '../AppIPCMain'
@@ -20,7 +20,6 @@ function GetFileUid(path: string): string {
     let stat = fs.statSync(path)
     return crypto.createHash('sha512').update(`${path}-${stat.mtimeMs}`).digest('hex')
 }
-
 function ResizeTooBigImg2PNG(buffer: Buffer, callback: (buffer: Buffer) => void) {
     sharp(buffer)
         .resize(500, 500, { fit: "inside" })
@@ -40,11 +39,9 @@ function Img2PNG(buffer: Buffer, callback: (buffer: Buffer) => void) {
             console.log(err)
         })
 }
-
 class CoverCacheList {
     [fileHash: string]: string
 }
-
 export class AppCommandCenter implements IAppIPCHost {
     public HostName: string = "CmdCenter"
     public OnGotMsg: (msg: AppIPCMessage) => void;
@@ -145,8 +142,8 @@ export class AppCommandCenter implements IAppIPCHost {
                 break;
             }
         }
-        if (lyricPath) return LyricParser.Parse(lyricPath)
-        return null;
+        if (lyricPath) return  { path: lyricPath, data: LyricParser.Parse(lyricPath)}
+        return { path: null, data: null};
     }
 
     private _coverCachePath: string = null;
@@ -168,6 +165,7 @@ export class AppCommandCenter implements IAppIPCHost {
             this._coverCacheListFiles = <CoverCacheList>JSON.parse(fs.readFileSync(this._coverCacheListFilePath).toString())
         })
     }
+
     public AddCoverCache(fileUid: string, buffer: Buffer, callback: () => void) {
         let imgHash = crypto.createHash('sha512').update(buffer).digest('hex')
         let cachePath = path.join(this._coverCachePath, `${imgHash}.png`)
@@ -188,6 +186,10 @@ export class AppCommandCenter implements IAppIPCHost {
 
     public RemoveAllAudioInCurrentList(args: any) {
         this.Send2Audio("RemoveAll", "CurrentList", null)
+    }
+
+    public OpenLRCFileAtExternal(args:any){
+        shell.openItem(args)
     }
 
 }
