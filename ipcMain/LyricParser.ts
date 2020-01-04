@@ -70,8 +70,17 @@ export class LyricParser {
             ParseLyricLine(rawLine, lines)
         })
         lines.sort((a,b)=>{return a.timeTag-b.timeTag})
+        lines.push(new LyricLine("Infinity", <number><unknown>"Infinity"))
         return lines
     }
+    public static NotFound = (()=>{
+        let ret:LyricLine[] = []
+        let n = new LyricLine("[00:00.00]", 0)
+        n.lyrics = ["Lyric File Not Found"]
+        ret.push(n)
+        ret.push(new LyricLine("Infinity", <number><unknown>"Infinity"))
+        return ret
+    })()
 
 }
 

@@ -40,11 +40,18 @@ class AppIPCAudio {
             this._wsServer.clients.forEach((client) => {
                 client.send(JSON.stringify(msg))
             })
+        }else if(msg.Receiver == "LyricCenter"){
+            this._ipcRenderer.send("FromAudio", msg)
         }
     }
 
     Send2Renderer(action, request, data) {
         let msg = new AppIPCMessage("Audio", "Renderer", action, request);
+        msg.Data = data;
+        this.Send(msg);
+    }
+    Send2LyricCenter(action, request, data) {
+        let msg = new AppIPCMessage("Audio", "LyricCenter", action, request);
         msg.Data = data;
         this.Send(msg);
     }

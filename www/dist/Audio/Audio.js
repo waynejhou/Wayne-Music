@@ -13,6 +13,7 @@ const EMPTY_AUDIO_DATA = {
     disk: { no: null, of: null },
     duration: 0,
     genre: null,
+    path: null,
     picture: "img/Ellipses.png",
     title: null,
     track: { no: null, of: null },
@@ -69,6 +70,7 @@ class AudioStateManager {
             appIpc.Send2Renderer("Respond", "Seek", this.Seek);
         })
         this._current = value
+        appIpc.Send2LyricCenter("Query", "Lyric", this.Current.path)
     }
     _playbackState = PlaybackStateEnum.Stopped
     get PlaybackState() {
@@ -146,13 +148,15 @@ class AudioStateManager {
 let manager = new AudioStateManager();
 
 function QueryAudioManager(request, data) {
+    if(request=="Lyric" && !manager.Lyric.path){
+        appIpc.Send2LyricCenter("Query", "Lyric", manager.Current.path)
+    }
     appIpc.Send2Renderer("Respond", request, manager[request])
 }
 
 function RemoteAudioManager(request, data) {
     if (request == "AudioDataSet") {
         manager.Current = data.AudioData
-        manager.Lyric = data.ExternalData.Lyric
     } else {
         manager[request] = data
     }
@@ -160,9 +164,15 @@ function RemoteAudioManager(request, data) {
 }
 
 appIpc.OnGotMsgFrom("Renderer", "Query", QueryAudioManager)
-
 appIpc.OnGotMsgFrom("Renderer", "Remote", RemoteAudioManager)
+appIpc.OnGotMsgFrom("Renderer", "Reload", (req,data)=>{
+    if(req!="Lyric") return
+    appIpc.Send2LyricCenter("Query", "Lyric", manager.Current.path)
+})
 appIpc.OnGotMsgFrom("CmdCenter", "Remote", RemoteAudioManager)
+appIpc.OnGotMsgFrom("LyricCenter", "Respond", (req,data)=>{
+    manager[req] = data
+})
 
 
 appIpc.OnGotMsgFrom("CmdCenter", "Add", (req, data) => {

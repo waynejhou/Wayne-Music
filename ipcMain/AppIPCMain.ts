@@ -1,4 +1,4 @@
-import { BrowserWindow, WebContents } from "electron";
+import { BrowserWindow, WebContents, IpcMain } from "electron";
 import { Server as WebSocketServer } from 'ws'
 import { IAppIPCHost } from "./AppIPCHosts/IAppIPCHost";
 
@@ -21,13 +21,14 @@ export class AppIPCMain {
     private _audioWindow: BrowserWindow = null;
     private _wsServer: WebSocketServer = null;
     private _hosts: IAppIPCHost[] = [];
+    private _ipcMain: IpcMain = null;
 
-    public constructor(audioWindow: BrowserWindow, wss: WebSocketServer) {
+    public constructor(audioWindow: BrowserWindow, wss: WebSocketServer, ipcMain:IpcMain) {
         this._audioWindow = audioWindow;
         this._wsServer = wss;
+        this._ipcMain = ipcMain
         this.InitCallbacks();
     }
-
 
     private InitCallbacks(): void {
         this._wsServer.on("connection", (socket, request) => {
@@ -48,6 +49,18 @@ export class AppIPCMain {
             socket.on('close', () => {
                 console.log('Close connected')
             })
+        })
+        this._ipcMain.on("FromAudio",(ev,msg)=>{
+            let receiverExist = false;
+            this._hosts.forEach((host) => {
+                if (host.HostName == msg.Receiver) {
+                    receiverExist = true
+                    host.OnGotMsg(msg);
+                }
+            })
+            if (!receiverExist) {
+                console.log(`Message got on channel "${msg.Channel}" without handling.`)
+            }
         })
     }
 

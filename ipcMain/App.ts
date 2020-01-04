@@ -1,5 +1,5 @@
 // import electron: 應用程式基底
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, ipcMain } from 'electron';
 // import ws: Renderer 程序間溝通使用 WebSocket
 import { Server as WebSocketServer } from 'ws'
 // import http: express server 的類別使用內建的 http server 介面
@@ -65,7 +65,7 @@ function createWindow(port: number) {
         }
     })
 
-    g.ipcMg = new AppIPCMain(g.audioBgWin, g.wsServer);
+    g.ipcMg = new AppIPCMain(g.audioBgWin, g.wsServer, ipcMain);
     g.ipcMg.RegisterHost(<IAppIPCHost>{
         HostName: "Audio",
         OnGotMsg(msg: AppIPCMessage) {

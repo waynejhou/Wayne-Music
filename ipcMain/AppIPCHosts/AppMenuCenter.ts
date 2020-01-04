@@ -55,6 +55,10 @@ export class AppMenuCenter implements IAppIPCHost {
             {
                 label: "&Open LRC file External",
                 click: () => { this._cmds.OpenLRCFileAtExternal(this._cmdArgs) }
+            },
+            {
+                label: "&Reload LRC file",
+                click: () => { this._cmds.ReloadLRCFile(this._cmdArgs) }
             }
         ])
     };

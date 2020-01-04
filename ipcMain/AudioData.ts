@@ -3,6 +3,7 @@ import { IAudioMetadata } from 'music-metadata'
 
 export class AudioData {
     public constructor(nativePath: string, metadata: IAudioMetadata, picture: string) {
+        this.path = nativePath
         this.album = metadata.common.album
         this.albumartist = metadata.common.albumartist
         this.artist = metadata.common.artist
@@ -32,6 +33,8 @@ export class AudioData {
     public duration: number = null;
 
     public genre: string = null
+
+    public path: string = null;
 
     public picture: string = "img/Ellipses.png"
 

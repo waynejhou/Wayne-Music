@@ -7,7 +7,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as crypto from 'crypto';
 import * as sharp from 'sharp'
-import { LyricParser, LyricLine } from '../LyricParser'
+import { AppLyricCenter } from './AppLyricCenter'
 
 
 function newFileFilter(name: string, exts: string[]): FileFilter {
@@ -49,12 +49,15 @@ export class AppCommandCenter implements IAppIPCHost {
     private _win: BrowserWindow = null;
     private _ipcMg: AppIPCMain = null;
     private _exePath: string = null;
+    private _lyricCenter: AppLyricCenter = null;
     public constructor(app: App, win: BrowserWindow, ipcMg: AppIPCMain) {
         this._app = app;
         this._win = win;
         this._ipcMg = ipcMg;
         this._exePath = this._app.isPackaged ? path.dirname(this._app.getPath('exe')) : this._app.getAppPath();
         this.initCacheFunction()
+        this._lyricCenter = new AppLyricCenter(this._ipcMg)
+        this._ipcMg.RegisterHost(this._lyricCenter)
     }
     private Send2Audio(action: string, request: string, data: any) {
         this._ipcMg.Send((() => {
@@ -70,9 +73,8 @@ export class AppCommandCenter implements IAppIPCHost {
             result.filePaths.forEach((filePath, idx) => {
                 this.LoadAudioFile(filePath, (metadata, picture) => {
                     let data = new AudioData(filePath, metadata, picture);
-                    let lyric = this.LoadAudioLyric(filePath)
                     if (idx == 0) {
-                        this.Send2Audio("Remote", "AudioDataSet", { AudioData: data, ExternalData: { Lyric: lyric } })
+                        this.Send2Audio("Remote", "AudioDataSet", { AudioData: data })
                     }
                     this.Send2Audio("Add", "CurrentList", data)
                 })
@@ -128,24 +130,6 @@ export class AppCommandCenter implements IAppIPCHost {
         })
     }
 
-    public LoadAudioLyric(filePath: string) {
-        let lyricPaths = LyricParser.GuessLyricPaths(filePath);
-        let lyricPath = null;
-        for (let index = 0; index < lyricPaths.length; index++) {
-            const path = lyricPaths[index];
-            let stat = null;
-            try {
-                stat = fs.statSync(path)
-            } catch (e) { }
-            if (stat) {
-                lyricPath = path
-                break;
-            }
-        }
-        if (lyricPath) return  { path: lyricPath, data: LyricParser.Parse(lyricPath)}
-        return { path: null, data: null};
-    }
-
     private _coverCachePath: string = null;
     private _coverCacheListFilePath: string = null
     private _coverCacheListFiles: CoverCacheList = {}
@@ -188,8 +172,11 @@ export class AppCommandCenter implements IAppIPCHost {
         this.Send2Audio("RemoveAll", "CurrentList", null)
     }
 
-    public OpenLRCFileAtExternal(args:any){
-        if(args!=null)shell.openItem(args)
+    public OpenLRCFileAtExternal(args: any) {
+        if (args != null) shell.openItem(args)
     }
 
+    public ReloadLRCFile(args: any){
+        if(args!=null) this._lyricCenter.LoadAudioLyric(args)
+    }
 }

@@ -117,7 +117,7 @@ _: {
                     }
                     else {
                         ret += `<span style="${name}: ${value}">`
-                        ret += tagMatch[0]
+                        //ret += tagMatch[0]
                     }
 
                 }
@@ -154,6 +154,9 @@ _: {
         if (lastIndex != nowIdx) {
             if (lastIndex != -1 && lastIndex < lyricElements.length) lyricElements[lastIndex].attr("highlight", () => { return false })
             if (nowIdx < lyricElements.length) lyricElements[nowIdx].attr("highlight", () => { return true })
+        }
+        if(lyricElements[nowIdx].attr("highlight")!="true"){
+            lyricElements[nowIdx].attr("highlight", () => { return true })
         }
         lastIndex = nowIdx
         let nowLyricTime = Responds.Lyric.data[nowIdx].timeTag
