@@ -15,12 +15,7 @@ _: {
         if (ListSelectedAudioIdx != null) return Responds.CurrentList[ListSelectedAudioIdx];
         return Responds.Current
     }
-
-    updateCoverList = (data) => {
-        $('img#metadata-cover-list').attr('src', data.picture)
-    }
-
-
+    
     ckeckItemInList = (idx) => {
         $(`.list-item`).attr('got_selected', () => { return false });
         $(`#list-item-${idx}`).attr('got_selected', () => { return true });
@@ -28,7 +23,7 @@ _: {
         let sa = getSelectedAudio()
         if (typeof sa == "undefined") return;
         updateCoverBackground(sa.picture)
-        updateCoverList(sa)
+        updateCoverBottomright(sa.picture)
     }
 
     ckeckAnotherItemInList = (idx) => {
@@ -37,7 +32,7 @@ _: {
         let sa = getSelectedAudio()
         if (typeof sa == "undefined") return;
         updateCoverBackground(sa.picture)
-        updateCoverList(sa)
+        updateCoverBottomright(sa.picture)
     }
 
     ckeckMultipleItemInList = (fromIdx, toIdx) => {
@@ -55,7 +50,7 @@ _: {
         let sa = getSelectedAudio()
         if (typeof sa == "undefined") return;
         updateCoverBackground(sa.picture)
-        updateCoverList(sa)
+        updateCoverBottomright(sa.picture)
     }
 
     $("#body-container").on('dblclick', '.list-item', (e) => {

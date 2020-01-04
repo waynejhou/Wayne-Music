@@ -27,6 +27,9 @@ export function getPresetExpressApp(electrinApp: App): express.Express {
     app.get('/list', function (req: express.Request, res: express.Response) {
         res.sendFile(path.join(VIEWPATH, 'list.html'));
     });
+    app.get('/lyric', function (req: express.Request, res: express.Response) {
+        res.sendFile(path.join(VIEWPATH, 'lyric.html'));
+    });
 
     return app
 }

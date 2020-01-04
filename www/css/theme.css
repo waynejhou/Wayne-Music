@@ -1,5 +1,5 @@
 :root {
-    --main-bg-color: darkred  ;
+    --main-bg-color: black  ;
     --main-fg-color: white;
     --main-layer-transparent: rgba(255, 255, 255, 0.1);
     --main-layer-transparent-d: rgba(255, 255, 255, 0.2);
@@ -109,7 +109,7 @@ body {
     border-radius: 10px;
 }
 
-#metadata-cover-list {
+#metadata-cover-bottomright {
     border-radius: 10px;
     filter: opacity(0.5) blur(1px);
 }
@@ -238,3 +238,18 @@ body {
 }
 
 
+.lyric-line{
+    font-size: 2.0rem;
+    margin-bottom: 1rem;
+    transition: opacity 0.5s;
+}
+.lyric-line[highlight=false]{
+    opacity: 0.5;
+}
+.lyric-line[highlight=true]{
+    opacity: 1;
+}
+
+.lyric-line rt{
+    font-size: 1.5rem;
+}

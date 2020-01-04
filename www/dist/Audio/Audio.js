@@ -50,6 +50,7 @@ class AudioStateManager {
             this._howl.unload()
             this._howl = null;
         }
+        console.log(value)
         this._howl = new Howl({
             src: [value.url],
             volume: this._volume,
@@ -128,19 +129,34 @@ class AudioStateManager {
     set Volume(value) {
         let val = max(0, min(1, value))
         this._volume = val;
-        this._howl.volume(val);
+        if (this._howl) this._howl.volume(val);
         appIpc.Send2Renderer("Respond", 'Volume', val)
+    }
+
+    _lyric = null;
+    get Lyric() {
+        return this._lyric;
+    }
+    set Lyric(value) {
+        this._lyric = value;
+        appIpc.Send2Renderer("Respond", 'Lyric', value)
     }
 }
 
 let manager = new AudioStateManager();
 
-function QueryAudioManager(request, data){
+function QueryAudioManager(request, data) {
     appIpc.Send2Renderer("Respond", request, manager[request])
 }
 
-function RemoteAudioManager(request, data){
-    manager[request] = data
+function RemoteAudioManager(request, data) {
+    if (request == "AudioDataSet") {
+        manager.Current = data.AudioData
+        manager.Lyric = data.ExternalData.Lyric
+    } else {
+        manager[request] = data
+    }
+
 }
 
 appIpc.OnGotMsgFrom("Renderer", "Query", QueryAudioManager)
@@ -149,13 +165,13 @@ appIpc.OnGotMsgFrom("Renderer", "Remote", RemoteAudioManager)
 appIpc.OnGotMsgFrom("CmdCenter", "Remote", RemoteAudioManager)
 
 
-appIpc.OnGotMsgFrom("CmdCenter", "Add", (req, data)=>{
+appIpc.OnGotMsgFrom("CmdCenter", "Add", (req, data) => {
     manager[req].push(data)
 })
-appIpc.OnGotMsgFrom("CmdCenter", "RemoveByIdxs", (req, idxs)=>{
+appIpc.OnGotMsgFrom("CmdCenter", "RemoveByIdxs", (req, idxs) => {
     idxs.reverse()
     idxs.forEach(idx => {
-        manager[req].splice(idx,1)
+        manager[req].splice(idx, 1)
     });
     appIpc.Send2Renderer("Respond", req, manager[req])
 })

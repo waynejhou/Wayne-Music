@@ -1,9 +1,8 @@
 import { pathToFileURL } from 'url'
 import { IAudioMetadata } from 'music-metadata'
-import { bytesToBase64 } from './Base64'
 
 export class AudioData {
-    public constructor(nativePath: string, metadata: IAudioMetadata, picture:string) {
+    public constructor(nativePath: string, metadata: IAudioMetadata, picture: string) {
         this.album = metadata.common.album
         this.albumartist = metadata.common.albumartist
         this.artist = metadata.common.artist
@@ -44,7 +43,7 @@ export class AudioData {
 
     public year: number = null
 
-    public toString() : string  {
+    public toString(): string {
         return `AudioData(Url: ${this.url})`;
     }
 }

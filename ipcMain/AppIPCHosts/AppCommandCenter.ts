@@ -7,6 +7,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as crypto from 'crypto';
 import * as sharp from 'sharp'
+import { LyricParser, LyricLine } from '../LyricParser'
 
 
 function newFileFilter(name: string, exts: string[]): FileFilter {
@@ -51,32 +52,14 @@ export class AppCommandCenter implements IAppIPCHost {
     private _win: BrowserWindow = null;
     private _ipcMg: AppIPCMain = null;
     private _exePath: string = null;
-    private _coverCachePath: string = null;
-    private _coverCacheListFilePath: string = null
-    private _coverCacheListFiles: CoverCacheList = {}
     public constructor(app: App, win: BrowserWindow, ipcMg: AppIPCMain) {
         this._app = app;
         this._win = win;
         this._ipcMg = ipcMg;
-        this._exePath = app.isPackaged ? path.dirname(app.getPath('exe')) : app.getAppPath();
-        console.log(this._exePath)
-        this._coverCachePath = path.join(this._exePath, 'Cover Cache');
-        console.log(this._coverCachePath)
-        fs.access(this._coverCachePath, fs.constants.F_OK, (err) => {
-            // dir not exist
-            if (err) {
-                fs.mkdirSync(this._coverCachePath, { recursive: true });
-            }
-        })
-        this._coverCacheListFilePath = path.join(this._coverCachePath, "list.json")
-        fs.access(this._coverCacheListFilePath, fs.constants.F_OK, (err) => {
-            if (err) {
-                fs.writeFileSync(this._coverCacheListFilePath, "{}")
-            }
-            this._coverCacheListFiles = <CoverCacheList>JSON.parse(fs.readFileSync(this._coverCacheListFilePath).toString())
-        })
+        this._exePath = this._app.isPackaged ? path.dirname(this._app.getPath('exe')) : this._app.getAppPath();
+        this.initCacheFunction()
     }
-    private Send2Audio(action:string, request:string, data:any){
+    private Send2Audio(action: string, request: string, data: any) {
         this._ipcMg.Send((() => {
             let ret = new AppIPCMessage(this.HostName, "Audio", action, request);
             ret.Data = data;
@@ -84,14 +67,15 @@ export class AppCommandCenter implements IAppIPCHost {
         })());
     }
 
-    public OpenDialog_Load_Play(args:any): void {
+    public OpenDialog_Load_Play(args: any): void {
         this.OpenDialog((result) => {
             if (result.canceled) return;
             result.filePaths.forEach((filePath, idx) => {
                 this.LoadAudioFile(filePath, (metadata, picture) => {
                     let data = new AudioData(filePath, metadata, picture);
+                    let lyric = this.LoadAudioLyric(filePath)
                     if (idx == 0) {
-                        this.Send2Audio("Remote", "Current", data)
+                        this.Send2Audio("Remote", "AudioDataSet", { AudioData: data, ExternalData: { Lyric: lyric } })
                     }
                     this.Send2Audio("Add", "CurrentList", data)
                 })
@@ -147,6 +131,43 @@ export class AppCommandCenter implements IAppIPCHost {
         })
     }
 
+    public LoadAudioLyric(filePath: string) {
+        let lyricPaths = LyricParser.GuessLyricPaths(filePath);
+        let lyricPath = null;
+        for (let index = 0; index < lyricPaths.length; index++) {
+            const path = lyricPaths[index];
+            let stat = null;
+            try {
+                stat = fs.statSync(path)
+            } catch (e) { }
+            if (stat) {
+                lyricPath = path
+                break;
+            }
+        }
+        if (lyricPath) return LyricParser.Parse(lyricPath)
+        return null;
+    }
+
+    private _coverCachePath: string = null;
+    private _coverCacheListFilePath: string = null
+    private _coverCacheListFiles: CoverCacheList = {}
+    private initCacheFunction() {
+        this._coverCachePath = path.join(this._exePath, 'Cover Cache');
+        fs.access(this._coverCachePath, fs.constants.F_OK, (err) => {
+            // dir not exist
+            if (err) {
+                fs.mkdirSync(this._coverCachePath, { recursive: true });
+            }
+        })
+        this._coverCacheListFilePath = path.join(this._coverCachePath, "list.json")
+        fs.access(this._coverCacheListFilePath, fs.constants.F_OK, (err) => {
+            if (err) {
+                fs.writeFileSync(this._coverCacheListFilePath, "{}")
+            }
+            this._coverCacheListFiles = <CoverCacheList>JSON.parse(fs.readFileSync(this._coverCacheListFilePath).toString())
+        })
+    }
     public AddCoverCache(fileUid: string, buffer: Buffer, callback: () => void) {
         let imgHash = crypto.createHash('sha512').update(buffer).digest('hex')
         let cachePath = path.join(this._coverCachePath, `${imgHash}.png`)
@@ -160,7 +181,7 @@ export class AppCommandCenter implements IAppIPCHost {
         })
     }
 
-    public RemoveAudioInCurrentListByIdxs(args:any){
+    public RemoveAudioInCurrentListByIdxs(args: any) {
         let idxs = <Array<Number>>args["idxs"]
         this.Send2Audio("RemoveByIdxs", "CurrentList", idxs)
     }

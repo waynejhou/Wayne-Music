@@ -33,12 +33,17 @@ function updateCoverBackground(picture) {
     })
 }
 
+function updateCoverBottomright(picture) {
+    $('img#metadata-cover-bottomright').attr('src', picture)
+}
+
 if (!OnResponds.Current) {
     OnResponds.Current = (audioData) => {
         updateTitle(audioData.title)
         updateAudioInfo(audioData.title, audioData.album)
         updateCover(audioData.picture)
         updateCoverBackground(audioData.picture)
+        updateCoverBottomright(audioData.picture)
         updateDuration(duration2string(audioData.duration))
     }
 }

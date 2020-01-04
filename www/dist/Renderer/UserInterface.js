@@ -30,6 +30,10 @@ $('button#page-changing-list').click(() => {
     bodyCachedLoad('list')
 })
 
+$('button#page-changing-lyric').click(() => {
+    bodyCachedLoad('lyric')
+})
+
 $('#audio-controls-playpause-btn').click(() => {
     if (Responds["PlaybackState"] == 'playback-playing') {
         AppIpc.Send2Audio("Remote", "PlaybackState", 'playback-paused')
@@ -46,12 +50,11 @@ $('#audio-controls-repeat-btn').click(() => {
 
 let isPosSliderMouseDown = false;
 let posSliderTempValue = 0;
-window.setInterval(() => {
-    if (Responds["PlaybackState"] != 'playback-playing') return
+OnSeekChange.push((seek)=>{
     if (isPosSliderMouseDown) return;
-    Responds.Seek += 0.033
-    updateSliderPos(Responds.Seek)
-}, 33);
+    updateSliderPos(seek)
+})
+
 
 $('#audio-controls-slider').on('mousemove', (e) => {
     let slider = e.currentTarget
