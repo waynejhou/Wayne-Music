@@ -17,10 +17,10 @@ _: {
     let fontfamily = "inherit"
     const def_fontfamily = "inherit"
 
-    getSpanStyle = (c = null, bgc = null, fw = null, fs = null, td = null, ff = null) => {
+    getSpanStyle = ({c = null, bgc = null, fw = null, fs = null, td = null, ff = null}) => {
         let ret = `style="`
         if (c) color = c;
-        if (bgc) def_bgcolor = bgc;
+        if (bgc) bgcolor = bgc;
         if (fw) fontweight = fw;
         if (fs) fontstyle = fs;
         if (td) textdecoration = td;
@@ -44,6 +44,7 @@ _: {
             top: 0
         })
         if (!lyric) return;
+        let aliasDict = {}
         let elements = lyric.map((lyricline, idx) => {
             let ret = `<div class="lyric-line" highlight="false" &&>`
             let divBG = "";
@@ -61,7 +62,7 @@ _: {
                         ret += tagMatch[1]
                     }
                     if (tagMatch[2] == undefined) continue
-                    if (isTagOpen) {
+                    if (isTagOpen && tagMatch[4].trim()!='ruby') {
                         ret += `</span>`
                         isTagOpen = false
                     }
@@ -71,21 +72,31 @@ _: {
                         continue
                     }
                     let name = tagMatch[4].toLowerCase();
-                    let value = tagMatch[6];
-                    if (value == undefined) value = 'inherit'
+                    let value = 'inherit';
+                    if (tagMatch[6] != undefined){
+                        let val = tagMatch[6].trim()
+                        if(val in aliasDict){
+                            value = aliasDict[val]
+                        }else{
+                            value = val
+                        }
+                    }
                     if (name == "fg") {
-                        ret += `<span ${getSpanStyle(c = value)}>`
+                        ret += `<span ${getSpanStyle({c : value})}>`
                     } else if (name == "hg") {
-                        ret += `<span ${getSpanStyle(bgc = value)}>`
+                        ret += `<span ${getSpanStyle({bgc : value})}>`
                     } else if (name == "b") {
-                        ret += `<span ${getSpanStyle(fw = 'bold')}>`
+                        ret += `<span ${getSpanStyle({fw : 'bold'})}>`
                     } else if (name == "i") {
-                        ret += `<span ${getSpanStyle(fs = 'italic')}>`
+                        ret += `<span ${getSpanStyle({fs : 'italic'})}>`
                     } else if (name == "u") {
-                        ret += `<span ${getSpanStyle(td = 'underline')}>`
+                        ret += `<span ${getSpanStyle({td : 'underline'})}>`
                     } else if (name == "d") {
-                        ret += `<span ${getSpanStyle(td = 'line-through')}>`
-                    } else if (name == "ruby") {
+                        ret += `<span ${getSpanStyle({td : 'line-through'})}>`
+                    }else if (name == "font") {
+                        ret += `<span ${getSpanStyle({ff : value})}>`
+                    }
+                    else if (name == "ruby") {
                         let isCloseTag = tagMatch[3] == "/"
                         if (!isCloseTag) {
                             ret += "<ruby>"
@@ -94,8 +105,19 @@ _: {
                             ret += "</ruby>"
                         }
                     }
+                    else if (name == "lbr") {
+                        ret += '['
+                    }
+                    else if (name == "rbr") {
+                        ret += ']'
+                    }
+                    else if (name == "alias") {
+                        let pair = value.split('=')
+                        aliasDict[pair[0].trim()]=pair[1].trim()
+                    }
                     else {
-                        ret += `<span style="${tagMatch[4]}: '${tagMatch[6]}'">`
+                        ret += `<span style="${name}: ${value}">`
+                        ret += tagMatch[0]
                     }
 
                 }
