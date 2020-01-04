@@ -186,4 +186,8 @@ export class AppCommandCenter implements IAppIPCHost {
         this.Send2Audio("RemoveByIdxs", "CurrentList", idxs)
     }
 
+    public RemoveAllAudioInCurrentList(args: any) {
+        this.Send2Audio("RemoveAll", "CurrentList", null)
+    }
+
 }

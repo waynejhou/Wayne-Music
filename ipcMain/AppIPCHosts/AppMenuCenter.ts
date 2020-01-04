@@ -48,7 +48,7 @@ export class AppMenuCenter implements IAppIPCHost {
             },
             {
                 label: "Remove &All Item",
-                click: () => { this._cmds.RemoveAudioInCurrentListByIdxs(this._cmdArgs) }
+                click: () => { this._cmds.RemoveAllAudioInCurrentList(this._cmdArgs) }
             }
         ])
     };

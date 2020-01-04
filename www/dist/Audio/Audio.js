@@ -176,3 +176,7 @@ appIpc.OnGotMsgFrom("CmdCenter", "RemoveByIdxs", (req, idxs) => {
     appIpc.Send2Renderer("Respond", req, manager[req])
 })
 
+appIpc.OnGotMsgFrom("CmdCenter", "RemoveAll", (req, data) => {
+    manager[req].length = 0
+    appIpc.Send2Renderer("Respond", req, manager[req])
+})
