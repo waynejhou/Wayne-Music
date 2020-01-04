@@ -189,7 +189,7 @@ export class AppCommandCenter implements IAppIPCHost {
     }
 
     public OpenLRCFileAtExternal(args:any){
-        shell.openItem(args)
+        if(args!=null)shell.openItem(args)
     }
 
 }
