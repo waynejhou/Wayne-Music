@@ -6,3 +6,4 @@ www/js/jquery-3.4.1.*.js
 www/js/mousetrap-1.6.3.*.js
 dist/*
 Cover Cache
+.DS_Store
