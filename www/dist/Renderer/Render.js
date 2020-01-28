@@ -138,6 +138,10 @@ if (!OnResponds.Seek) {
         updateSliderPos(data)
     }
 }
+OnWindowFocus.push(() => {
+    AppIpc.Send2Audio("Query", "Seek", null)
+})
+
 
 
 let isMouseInVolumeSlider = false

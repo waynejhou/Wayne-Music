@@ -84,9 +84,12 @@ export class AppCommandCenter implements IAppIPCHost {
 
     public OpenDialog(callback: (result: { canceled: boolean, filePaths: string[] }) => void) {
         dialog.showOpenDialog(this._win, {
-            filters: [newFileFilter('Audio', ['flac', 'mp3']),],
+            filters: [
+                newFileFilter('Audio', ['flac', 'mp3']),
+                newFileFilter('All', ['*']),
+            ],
             title: "Open Audio",
-            properties: ["multiSelections"],
+            properties: ['openFile', "multiSelections"],
         })
             .then(callback)
             .catch((err: any) => {
@@ -176,7 +179,7 @@ export class AppCommandCenter implements IAppIPCHost {
         if (args != null) shell.openItem(args)
     }
 
-    public ReloadLRCFile(args: any){
-        if(args!=null) this._lyricCenter.LoadAudioLyric(args)
+    public ReloadLRCFile(args: any) {
+        if (args != null) this._lyricCenter.LoadAudioLyric(args)
     }
 }

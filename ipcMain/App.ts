@@ -123,6 +123,7 @@ function createWindow(port: number) {
         g.wsServer = null;
     })
     g.appMenuCenter = new AppMenuCenter(app, g.appCmdCenter)
+    console.log(g.appMenuCenter.Menus.Index)
     Menu.setApplicationMenu(g.appMenuCenter.Menus.Index)
     g.ipcMg.RegisterHost(g.appMenuCenter)
 

@@ -2,7 +2,7 @@ BodyCachedElements = {}
 OnBodyChanged = {};
 CurrentBody = null;
 function bodyCachedLoad(url) {
-    if(CurrentBody==url) return;
+    if (CurrentBody == url) return;
     CurrentBody = url
     AppIpc.Send2CrossProcessVariables("Set", "CurrentBody", CurrentBody)
     if (!(BodyCachedElements[url] === undefined)) {
@@ -50,10 +50,11 @@ $('#audio-controls-repeat-btn').click(() => {
 
 let isPosSliderMouseDown = false;
 let posSliderTempValue = 0;
-OnSeekChange.push((seek)=>{
+OnSeekChange.push((seek) => {
     if (isPosSliderMouseDown) return;
     updateSliderPos(seek)
 })
+
 
 
 $('#audio-controls-slider').on('mousemove', (e) => {
@@ -91,9 +92,5 @@ $('#audio-controls-volume').on("mouseup", (e) => {
 
 
 $('#audio-controls-volume').on('mousewheel', (ev) => {
-    if (ev.originalEvent.wheelDelta < 0) {
-        AppIpc.Send2Audio("Remote", "Volume", Responds.Volume - 0.05)
-    } else {
-        AppIpc.Send2Audio("Remote", "Volume", Responds.Volume + 0.05)
-    }
+    AppIpc.Send2Audio("Remote", "Volume", Responds.Volume + ev.originalEvent.wheelDelta/1000)
 })

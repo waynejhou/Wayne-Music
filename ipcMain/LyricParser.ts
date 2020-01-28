@@ -69,8 +69,15 @@ export class LyricParser {
         raw.split("\n").forEach((rawLine, i)=>{
             ParseLyricLine(rawLine, lines)
         })
-        lines.sort((a,b)=>{return a.timeTag-b.timeTag})
+        if(!lines.some((val)=>{val.timeTag==0})){
+            lines.push(new LyricLine("[00:00.00]", 0))
+        }
         lines.push(new LyricLine("Infinity", <number><unknown>"Infinity"))
+        lines.sort((a,b)=>{return a.timeTag-b.timeTag})
+        lines.forEach((val, idx)=>{
+            console.log(val.rawTimeTag);
+            console.log(val.lyrics)
+        });
         return lines
     }
     public static NotFound = (()=>{

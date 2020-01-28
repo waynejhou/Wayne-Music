@@ -1,7 +1,8 @@
 OnResponds = {}
 Responds = {}
 OnSeekChange = []
-
+OnWindowFocus = []
+IsMac = window.navigator.platform.startsWith("Mac")
 
 let ws = new WebSocket(`ws://${window.location.host}`)
 AppIpc = new AppIPCRenderer(ws,
@@ -30,11 +31,22 @@ function ReceiveRespond(request, data) {
 
 AppIpc.OnGotMsgFrom("Audio", "Respond", ReceiveRespond)
 
-
-window.setInterval(() => {
+function changeSeekInterval() {
     if (Responds["PlaybackState"] != 'playback-playing') return
-    Responds.Seek += 0.033
+    Responds.Seek += 0.05
     OnSeekChange.forEach(cb => {
         cb(Responds.Seek)
     });
-}, 33);
+}
+window.setInterval(changeSeekInterval, 50);
+
+
+function windowFocus(){
+    OnWindowFocus.forEach(cb => {
+        cb()
+    });
+}
+$(window).on('focus', (ev)=>{
+    windowFocus()
+})
+

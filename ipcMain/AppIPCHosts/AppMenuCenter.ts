@@ -7,7 +7,7 @@ export class AppMenuCenter implements IAppIPCHost {
     HostName: string = "MenuCenter";
     private _app: App = null;
     private _cmds: AppCommandCenter = null;
-    private _cmdArgs:any = null;
+    private _cmdArgs: any = null;
     private _isMac: boolean = process.platform === 'darwin'
     private get MacMenuHeaderTemplate(): MenuItemConstructorOptions[] {
         return (this._isMac ? [{
@@ -23,45 +23,51 @@ export class AppMenuCenter implements IAppIPCHost {
     public constructor(app: App, cmds: AppCommandCenter) {
         this._app = app;
         this._cmds = cmds
+        this.Menus = this.generateMenus();
     }
 
-    public Menus: { [name: string]: Menu } = {
-        Index: Menu.buildFromTemplate(
-            [
-                ... this.MacMenuHeaderTemplate,
+    public Menus: { [name: string]: Menu }
+    private generateMenus(): { [name: string]: Menu } {
+        return {
+            Index: Menu.buildFromTemplate(
+                [
+                    ... this.MacMenuHeaderTemplate,
+                    {
+                        label: '&File',
+                        submenu: [
+                            {
+                                label: "&Open Audio",
+                                click: () => { this._cmds.OpenDialog_Load_Play(this._cmdArgs) }
+                            },
+                            this.CloseOrQuit
+                        ]
+                    },
+                ]
+            ),
+            List: Menu.buildFromTemplate([
                 {
-                    label: '&File',
-                    submenu: [
-                        {
-                            label: "&Open Audio",
-                            click: () => { this._cmds.OpenDialog_Load_Play(this._cmdArgs) }
-                        },
-                        this.CloseOrQuit
-                    ]
+                    label: "Remove &Selected Item",
+                    click: () => { this._cmds.RemoveAudioInCurrentListByIdxs(this._cmdArgs) }
                 },
-            ]
-        ),
-        List: Menu.buildFromTemplate([
-            {
-                label: "Remove &Selected Item",
-                click: () => { this._cmds.RemoveAudioInCurrentListByIdxs(this._cmdArgs) }
-            },
-            {
-                label: "Remove &All Item",
-                click: () => { this._cmds.RemoveAllAudioInCurrentList(this._cmdArgs) }
-            }
-        ]),
-        Lyric:  Menu.buildFromTemplate([
-            {
-                label: "&Open LRC file External",
-                click: () => { this._cmds.OpenLRCFileAtExternal(this._cmdArgs) }
-            },
-            {
-                label: "&Reload LRC file",
-                click: () => { this._cmds.ReloadLRCFile(this._cmdArgs) }
-            }
-        ])
-    };
+                {
+                    label: "Remove &All Item",
+                    click: () => { this._cmds.RemoveAllAudioInCurrentList(this._cmdArgs) }
+                }
+            ]),
+            Lyric: Menu.buildFromTemplate([
+                {
+                    label: "&Open LRC file External",
+                    click: () => { this._cmds.OpenLRCFileAtExternal(this._cmdArgs) }
+                },
+                {
+                    label: "&Reload LRC file",
+                    click: () => { this._cmds.ReloadLRCFile(this._cmdArgs) }
+                }
+            ])
+        };
+    }
+
+
 
     public OnGotMsg(msg: AppIPCMessage): any {
         if (typeof this.Menus[msg.Request] === undefined) return;
