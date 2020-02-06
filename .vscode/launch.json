@@ -8,14 +8,20 @@
             "type": "node",
             "request": "launch",
             "name": "Electron Main",
-            "cwd": "${workspaceFolder}",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
             "args": ["."],
             "skipFiles": [
                 "<node_internals>/**"
-            ],
-            "preLaunchTask":"build",
-            "outputCapture": "std"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/a.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }

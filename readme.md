@@ -1,6 +1,6 @@
 # Wayne Music
 
-![screenshot](readme_resources/screenshot.png)
+![screenshot](README/screenshot.png)
 
 ```bash
 git clone

@@ -1,9 +1,5 @@
-.vscode/settings.json
-build/*
-node_modules/*
-www/material-design-icons-3.0.1/*
-www/js/jquery-3.4.1.*.js
-www/js/mousetrap-1.6.3.*.js
-dist/*
-Cover Cache
-.DS_Store
+build
+node_modules
+www
+dist
+cover_cache
