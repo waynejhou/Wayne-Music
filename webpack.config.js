@@ -35,7 +35,7 @@ module.exports = [
         ],
         output: {
             path: path.join(__dirname, 'www'),
-            filename: 'js/renderer.bundle.js'
+            filename: 'js/index.bundle.js'
         }
     }
 ]
