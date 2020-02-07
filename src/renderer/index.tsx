@@ -1,9 +1,10 @@
 import ReactDOM from 'react-dom';
-import React, { Component } from 'react';
+import React from 'react';
 import { AppIpc } from '../shared/Data';
 import { ipcRenderer, IpcRenderer } from 'electron'
 import { AppIpcRenderer } from './AppIpcRenderer'
 import './index.css'
+import { App } from './App';
 
 class GetParameters {
     public name: string;
@@ -27,20 +28,10 @@ ipc.onGotMessageFrom("cmdCenter", "update", (req, data)=>{
     console.log(data)
 })
 
-class AppProps {
-    public render: ()=>{};
-}
-const App: React.FC<AppProps> = (props) => {
-    return (
-        <div id='root' className='app'>
-            {get.name}
-        </div>
-    )
-}
 
 function render(){
     ReactDOM.render(
-        <App render={this}></App>,
+        <App title={get.name} render={this}></App>,
         document.getElementById('main-placehold')
     );
 }
