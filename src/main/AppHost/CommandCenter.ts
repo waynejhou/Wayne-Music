@@ -81,7 +81,6 @@ export class CommandCenter implements AppHost.IHost {
     }
 
     public async loadAudioByPath(fp: string) {
-        console.log(fp)
         // 定義非同步的失敗行為與旗幟
         let asyncFailed: boolean = false;
         function onCatched(err: any) { console.log(err); asyncFailed = true; }
