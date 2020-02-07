@@ -7,6 +7,7 @@ import { cast2ExGlobal } from './IExGlobal'
 import { Session } from './AppSession';
 
 const g = cast2ExGlobal(global);
+g.stateCenter = new AppHost.StateCenter(app)
 g.mainRouter = new AppIPC.MainRouter("main", ipcMain)
 g.sessCenter = new AppHost.SessionCenter()
 g.mainRouter.registerHost(g.sessCenter)
@@ -23,12 +24,12 @@ g.createSession = () => {
 // 當 Electron 完成初始化，並且準備好建立瀏覽器視窗時
 // 會呼叫這的方法
 // 有些 API 只能在這個事件發生後才能用。
-app.on('ready', () => {
+g.stateCenter.on('electron-ready', (info)=>{
     g.createSession()
 })
 
 // 在所有視窗都關閉時結束程式。
-app.on('window-all-closed', () => {
+g.stateCenter.on('electron-window-all-closed', ()=>{
     // 在 macOS 中，一般會讓應用程式及選單列繼續留著，
     // 除非使用者按了 Cmd + Q 確定終止它們
     if (process.platform !== 'darwin') {
@@ -36,7 +37,7 @@ app.on('window-all-closed', () => {
     }
 })
 
-app.on('activate', () => {
+g.stateCenter.on('electron-activate', ()=>{
     // 在 macOS 中，一般會在使用者按了 Dock 圖示
     // 且沒有其他視窗開啟的情況下，
     // 重新在應用程式裡建立視窗。

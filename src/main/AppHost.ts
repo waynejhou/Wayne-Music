@@ -1,13 +1,12 @@
-import { CommandCenter } from './AppHost/CommandCenter';
 import { MenuCenter } from './AppHost/MenuCenter';
 import { LyricCenter } from './AppHost/LyricCenter';
-import { SessionCenter } from './AppHost/SessionCenter';
+import { SessionHost } from './AppHost/SessionHost';
+import { StatusHost } from './AppHost/StatusHost'
 import { IHost } from './../shared/IAppIpcHost'
 
 export {
-    CommandCenter,
     MenuCenter,
-    LyricCenter,
     SessionCenter,
+    StateCenter,
     IHost
 }

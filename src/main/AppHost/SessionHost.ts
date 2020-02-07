@@ -1,19 +1,14 @@
 import { Session } from '../AppSession'
 import * as AppIpc from '../AppIpc'
 import { IHost } from '../AppHost';
+import { cast2ExGlobal } from '../IExGlobal'
 
-export class SessionCenter implements IHost{
+const g = cast2ExGlobal(global)
+
+
+export class SessionHost implements IHost{
     public hostName: string;
-    public onGotMsg(msg: AppIpc.Message){
-        console.log(`${this.hostName} got msg on ${msg.channel}`)
-        if(msg.receiver!=this.hostName) return;
-        for (let index = 0; index < msg.commands.length; index++) {
-            const cmd = msg.commands[index];
-            if(cmd.action=="focus"){
-                this.changeLastFocus(cmd.request)
-            }
-        }
-    };
+    public onGotMsg: (msg: AppIpc.Message)=>void
     private sessSet: {[name:string]:Session}
     private lastFocusSessName: string
 
@@ -21,6 +16,9 @@ export class SessionCenter implements IHost{
         this.hostName = 'sessCenter'
         this.lastFocusSessName = null;
         this.sessSet = {};
+        g.stateCenter.on("session-focus", (sender)=>{
+            this.changeLastFocus(sender)
+        })
     }
 
     public add(sess:Session){

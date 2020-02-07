@@ -30,39 +30,34 @@ export class CommandCenter implements AppHost.IHost {
         this.initCacheFunction()
     }
 
-    public async openAudioDialog_loadAudio_SendAudio_Play(args: any) {
-        // 確保必要參數的存在
-        let optSess = null
-        if (args && 'sess' in args){
-            optSess = (<Session>args.sess)
-        } 
-        else{
-            optSess = g.sessCenter.lastFocusSess
-        }
-
+    public async openAudioDialog_loadAudio_SendAudio_Play(sess:Session) {
         // 定義非同步的失敗行為與旗幟 
         let asyncFailed: boolean = false;
         function onCatched(err: any) { console.log(err); asyncFailed = true; return <any>null }
 
         // openDialog: 打開檔案視窗
         // 非同步的失敗 與 視窗取消 則直接結束函式
-        const dialogResult = <Electron.OpenDialogReturnValue>await this.openAudioDialog(optSess.rendererWindow).catch(onCatched)
+        const dialogResult = <Electron.OpenDialogReturnValue>await this.openAudioDialog(sess.rendererWindow).catch(onCatched)
         if (asyncFailed) return
         if (dialogResult.canceled) return
 
         // loadAudio: 讀取檔案視窗
         // 不會發生非同步的失敗     
-        console.log("before async loadAudioByPath")   
         const firstAudio = await this.loadAudioByPath(dialogResult.filePaths[0])
-        console.log(firstAudio.url)
-        console.log("after async loadAudioByPath")
-        optSess.router.send(new AppIpc.Message("cmdCenter", "renderer", new AppIpc.Command("update", "current", firstAudio)))
+        sess.router.send(new AppIpc.Message("cmdCenter", "renderer", new AppIpc.Command("update", "current", firstAudio)))
         if(dialogResult.filePaths.length>1){
-            console.log("before many async loadAudioByPath")   
-            const restAudios = await Promise.all(dialogResult.filePaths.map( (fp) => this.loadAudioByPath(fp)))
-            console.log(restAudios.map(v=>v.url))
-            console.log("after many async loadAudioByPath")   
+            const restAudios = await this.loadAudiosByPaths(dialogResult.filePaths)
+             /** After Play List implement */
         }
+    }
+
+    public async loadAudiosByPaths_SendAudio_Play(filePaths:string[], sess:Session){
+        if(filePaths.length<=0) return
+        const firstAudio = await this.loadAudioByPath(filePaths[0])
+        sess.router.send(new AppIpc.Message("cmdCenter", "renderer", new AppIpc.Command("update", "current", firstAudio)))
+        if(filePaths.length<=1) return
+        const restAudios = await this.loadAudiosByPaths(filePaths)
+        /** After Play List implement */
     }
 
     public openAudioDialog(win?: BrowserWindow) {
@@ -78,6 +73,10 @@ export class CommandCenter implements AppHost.IHost {
             title: "Open Audio",
             properties: ["multiSelections"],
         })
+    }
+
+    public loadAudiosByPaths(filePaths:string[]){
+        return Promise.all(filePaths.map( (fp) => this.loadAudioByPath(fp)))
     }
 
     public async loadAudioByPath(fp: string) {
@@ -182,25 +181,8 @@ export class CommandCenter implements AppHost.IHost {
         })
     }
 
-    private coverCachePath: string = null;
-    private coverCacheListFilePath: string = null
-    private coverCacheListFiles: CoverCacheList = null
-    private async initCacheFunction() {
-        this.coverCachePath = path.join(this.exePath, 'cover_cache');
-        await fsx.ensureDirPathAvailable(this.coverCachePath)
-            .catch((err) => { console.log(`Can't not create Caver Cache Path`); throw err })
 
-        this.coverCacheListFilePath = path.join(this.coverCachePath, "list.csv")
-        await fsx.ensureFilePathAvailable(this.coverCacheListFilePath)
-            .catch((err) => { console.log(`Can't not create Cover Cache List File`); throw err })
 
-        let { encoding, lines } = await fsx.readFileLines(this.coverCacheListFilePath)
-        this.coverCacheListFiles = {}
-        for (let index = 0; index < lines.length; index++) {
-            let spltstr = lines[index].split(',').map(v => v.trim())
-            this.coverCacheListFiles[spltstr[0]] = spltstr[1]
-        }
-    }
 
 
     /*
@@ -222,6 +204,3 @@ export class CommandCenter implements AppHost.IHost {
     }*/
 }
 
-class CoverCacheList {
-    [fileHash: string]: string
-}

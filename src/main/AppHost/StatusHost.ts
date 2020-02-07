@@ -1,12 +1,52 @@
 import { IHost } from "../AppHost";
 import * as AppIpc from "../AppIpc"
 import { App } from "electron";
+import { Session } from "../AppSession";
 
 export class LaunchInfo {
     [key: string]: any
 }
 
-export class AppStateCenter implements IHost {
+export class SessionCenter{
+    private sessSet: {[name:string]:Session}
+    private lastFocusSessName: string
+
+    public constructor(){
+        this.lastFocusSessName = null;
+        this.sessSet = {};
+    }
+
+    public add(sess:Session){
+        this.sessSet[sess.name] = sess
+        this.changeLastFocus(sess.name)
+    }
+    public remove(name:string){
+        delete this.sessSet[name]
+    }
+    public changeLastFocus(name:string){
+        if(name in this.sessSet){
+            this.lastFocusSessName = name
+        }
+    }
+
+    public get(name:string){
+        return this.sessSet[name]
+    }
+
+    public get length(){
+        return Object.keys(this.sessSet).length
+    }
+
+    public get lastFocusSess(){
+        if(this.lastFocusSessName){
+            return this.sessSet[this.lastFocusSessName]
+        }
+        return null;
+    }
+}
+
+
+export class StatusHost implements IHost {
 
     public hostName: string;
     private app: App;
@@ -33,8 +73,6 @@ export class AppStateCenter implements IHost {
             }
         }
     }
-
-
 
     public on(event: "electron-ready", callback: (launchInfo: LaunchInfo) => void): void;
     public on(event: "electron-window-all-closed", callback: () => void): void;
@@ -85,4 +123,6 @@ export class AppStateCenter implements IHost {
         }
     }
 
+    
 }
+

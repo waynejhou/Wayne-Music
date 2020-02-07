@@ -3,6 +3,7 @@ import * as AppIpc from "./AppIpc"
 
 // Global 介面擴充，以參照重要物件
 export interface IExGlobal extends NodeJS.Global {
+    stateCenter: AppHost.StateCenter,
     sessCenter: AppHost.SessionCenter,
     mainRouter: AppIpc.MainRouter,
     cmdCenter: AppHost.CommandCenter,

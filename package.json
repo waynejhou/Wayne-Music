@@ -8,6 +8,7 @@
         "compile:renderer": "webpack",
         "compile": "npm run compile:main && npm run compile:renderer",
         "start": "npm run compile && electron .",
+        "start:main": "npm run compile:main && electron .",
         "start:electron": "electron .",
         "dist": "electron-builder",
         "start:devServer": "webpack-dev-server"

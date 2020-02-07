@@ -6,7 +6,7 @@ import { cast2ExGlobal } from "../IExGlobal";
 
 const g = cast2ExGlobal(global);
 
-export class MenuCenter implements IHost {
+export class MenuHost implements IHost {
     public hostName: string = null;
     private app: App = null;
     private cmds: CommandCenter = null;
