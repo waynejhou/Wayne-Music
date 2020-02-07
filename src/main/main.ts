@@ -1,13 +1,10 @@
-
-
 // import electron: 應用程式基底
-import { app, ipcMain, Menu } from 'electron';
+import { app, ipcMain, Menu, Info } from 'electron';
 
 import * as AppIPC from './AppIpc'
 import * as AppHost from './AppHost';
 import { cast2ExGlobal } from './IExGlobal'
 import { Session } from './AppSession';
-
 
 const g = cast2ExGlobal(global);
 g.mainRouter = new AppIPC.MainRouter("main", ipcMain)
@@ -16,7 +13,6 @@ g.mainRouter.registerHost(g.sessCenter)
 g.cmdCenter = new AppHost.CommandCenter(app)
 g.menuCenter = new AppHost.MenuCenter(app, g.cmdCenter)
 Menu.setApplicationMenu(g.menuCenter.menus.index);
-
 
 const useDevServer = false
 g.createSession = () => {
