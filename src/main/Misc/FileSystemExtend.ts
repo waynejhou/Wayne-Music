@@ -13,16 +13,20 @@ import * as iconv from 'iconv-lite';
  */
 export function ensureDirPathAvailable(dirPath: string) {
     return new Promise<void>(async (resolve, reject) => {
-        let asyncFailed = false
-        let stat = <fs.Stats>await fs.promises.stat(dirPath).catch((err) => { asyncFailed = true })
-        if (asyncFailed == false && stat.isDirectory()) { resolve(); return } // 路徑存在，且是資料夾
-        await fs.promises.mkdir(dirPath, { recursive: true })// 製作資料夾
-            .then(() => {
+        try {
+            const stat = await fs.promises.stat(dirPath)
+            if (stat.isDirectory())
+                resolve();
+            else
+                throw new Error("Path is existing file.")
+        } catch (err) {
+            try {
+                await fs.promises.mkdir(dirPath, { recursive: true })
                 resolve()
-            })
-            .catch((err) => {
+            } catch (err) {
                 reject(err)
-            })
+            }
+        }
         return
     })
 }
@@ -34,17 +38,24 @@ export function ensureDirPathAvailable(dirPath: string) {
  * 
  * 若不存在 => 創建一個
  * 
- * @param dirPath 資料夾路徑
+ * @param filePath 檔案路徑
  */
 export function ensureFilePathAvailable(filePath: string) {
     return new Promise(async (resolve, reject) => {
-        let asyncFailed = false
-        let stat = <fs.Stats>await fs.promises.stat(filePath).catch((err) => { asyncFailed = true })
-        if (asyncFailed == false && stat.isFile()) { resolve(); return } // 路徑存在，且是檔案
-        let pfh = <fs.promises.FileHandle>await fs.promises.open(filePath, 'w').catch((err) => { reject(err); asyncFailed = true })
-        if (asyncFailed) return
-        await pfh.close().catch((err) => { reject(err); asyncFailed = true })
-        if (asyncFailed) return
+        try {
+            const stat = await fs.promises.stat(filePath)
+            if (stat.isFile())
+                resolve();
+            else
+                throw new Error("Path is existing directory.")
+        } catch (err) {
+            try {
+                await (await fs.promises.open(filePath, 'w')).close()
+                resolve()
+            } catch (err) {
+                reject(err)
+            }
+        }
         return
     })
 }
@@ -63,21 +74,21 @@ export class FileReadLinesResult {
  * @param encoding 編碼（預設為`"auto"`：自動偵測）
  */
 export function readFileLines(filePath: string, encoding: string = "auto") {
-    return new Promise<FileReadLinesResult>((resolve, reject) => {
-        fs.promises.readFile(filePath)
-            .then((buffer) => {
-                if (encoding == "auto") encoding = chardet.detect(buffer)
-                let context = iconv.decode(buffer, encoding)
-                let ret: string[] = [];
-                if (context.length != 0) {
-                    ret = context.split("\n").map(v => v.trim())
-                }
-                resolve(<FileReadLinesResult>{
-                    encoding,
-                    lines: ret
-                })
-            }).catch((err) => {
-                reject(err)
+    return new Promise<FileReadLinesResult>(async (resolve, reject) => {
+        try {
+            const buffer = await fs.promises.readFile(filePath)
+            if (encoding == "auto") encoding = chardet.detect(buffer)
+            const context = iconv.decode(buffer, encoding)
+            let ret: string[] = [];
+            if (context.length != 0) {
+                ret = context.split("\n").map(v => v.trim())
+            }
+            resolve(<FileReadLinesResult>{
+                encoding,
+                lines: ret
             })
+        } catch (err) {
+            reject(err)
+        }
     })
 }

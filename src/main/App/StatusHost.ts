@@ -1,84 +1,44 @@
-import { IHost } from "../AppHost";
-import * as AppIpc from "../AppIpc"
 import { App } from "electron";
-import { Session } from "../AppSession";
+import * as AppIpc from '../AppIpc'
+import * as AppHost from '../AppHost'
 
-export class LaunchInfo {
-    [key: string]: any
-}
-
-export class SessionCenter{
-    private sessSet: {[name:string]:Session}
-    private lastFocusSessName: string
-
-    public constructor(){
-        this.lastFocusSessName = null;
-        this.sessSet = {};
-    }
-
-    public add(sess:Session){
-        this.sessSet[sess.name] = sess
-        this.changeLastFocus(sess.name)
-    }
-    public remove(name:string){
-        delete this.sessSet[name]
-    }
-    public changeLastFocus(name:string){
-        if(name in this.sessSet){
-            this.lastFocusSessName = name
-        }
-    }
-
-    public get(name:string){
-        return this.sessSet[name]
-    }
-
-    public get length(){
-        return Object.keys(this.sessSet).length
-    }
-
-    public get lastFocusSess(){
-        if(this.lastFocusSessName){
-            return this.sessSet[this.lastFocusSessName]
-        }
-        return null;
-    }
-}
-
-
-export class StatusHost implements IHost {
-
-    public hostName: string;
+export class StatusHost implements AppHost.IHost {
     private app: App;
     private onCallbacks: { [key: string]: Function[] }
     private onceCallbacks: { [key: string]: Function[] }
-
+    public hostName: string
     public constructor(app: App) {
         this.app = app
+        this.hostName = "statusHost"
         this.onCallbacks = {}
         this.onceCallbacks = {}
     }
+    public onGotCmd(cmd: AppIpc.Command) {
+        if (cmd.action == "fire") {
+            this.fire(cmd.request, cmd.data)
+        }
+    }
 
-    public onGotMsg(msg: AppIpc.Message) {
-        for (let index = 0; index < msg.commands.length; index++) {
-            const cmd = msg.commands[index];
-            if (cmd.action == "fire") {
-                if(this.onCallbacks[cmd.request]){
-                    this.onCallbacks[cmd.request].forEach(v=>v(cmd.data))
-                }
-                if(this.onceCallbacks[cmd.request]){
-                    this.onceCallbacks[cmd.request].forEach(v=>v(cmd.data))
-                    this.onceCallbacks[cmd.request] = undefined;
-                }
-            }
+    public fire(event: "session-ready", sender: string): void;
+    public fire(event: "session-focus", sender: string): void;
+    public fire(event: "session-closed", sender: string): void;
+    public fire(event: string, param: any): void;
+    public fire(event: string, param: any) {
+        if (this.onCallbacks[event]) {
+            this.onCallbacks[event].forEach(v => v(param))
+        }
+        if (this.onceCallbacks[event]) {
+            this.onceCallbacks[event].forEach(v => v(param))
+            this.onceCallbacks[event] = undefined;
         }
     }
 
     public on(event: "electron-ready", callback: (launchInfo: LaunchInfo) => void): void;
     public on(event: "electron-window-all-closed", callback: () => void): void;
     public on(event: "electron-activate", callback: () => void): void;
-    public on(event: "session-ready", callback: (sender:string) => void): void;
-    public on(event: "session-focus", callback: (sender:string) => void): void;
+    public on(event: "session-ready", callback: (sender: string) => void): void;
+    public on(event: "session-focus", callback: (sender: string) => void): void;
+    public on(event: "session-closed", callback: (sender: string) => void): void;
     public on(event: string, callback: any) {
         switch (event) {
             case "electron-ready":
@@ -101,8 +61,9 @@ export class StatusHost implements IHost {
     public once(event: "electron-ready", callback: (launchInfo: LaunchInfo) => void): void;
     public once(event: "electron-window-all-closed", callback: () => void): void;
     public once(event: "electron-activate", callback: () => void): void;
-    public once(event: "session-ready", callback: () => void): void;
-    public once(event: "session-focus", callback: () => void): void;
+    public once(event: "session-ready", callback: (sender: string) => void): void;
+    public once(event: "session-focus", callback: (sender: string) => void): void;
+    public once(event: "session-closed", callback: (sender: string) => void): void;
     public once(event: string, callback: any) {
         switch (event) {
             case "electron-ready":
@@ -122,7 +83,9 @@ export class StatusHost implements IHost {
                 break;
         }
     }
+}
 
-    
+export class LaunchInfo {
+    [key: string]: any
 }
 

@@ -1,18 +1,24 @@
-import { BrowserWindow, App, LoadFileOptions, IpcMain } from "electron";
-import * as AppIpc from "./AppIpc";
-import * as AppHost from "./AppHost";
-import { cast2ExGlobal } from "./IExGlobal";
+import { BrowserWindow, App as ElectronApp, LoadFileOptions, IpcMain } from "electron";
 
-const g = cast2ExGlobal(global);
+import * as App from "../App"
+import * as AppIpc from "../AppIpc";
+import * as AppHost from "../AppHost"
 
 export class Session {
-    public rendererWindow: BrowserWindow = null;
+    public name: string = null;
+    private statusHost: AppHost.StatusHost = null;
     public router: AppIpc.MainRouter = null;
-    public name:string = null;
-    public menuCenter: AppHost.MenuCenter = null;
-    public cmdCenter: AppHost.CommandCenter = null;
-    public constructor(name:string, app:App, ipcMain:IpcMain, useDevServer: boolean = false) {
+    public rendererWindow: BrowserWindow = null;
+    public constructor(
+        name: string,
+        ipcMain: IpcMain,
+        statusHost: AppHost.StatusHost,
+        useDevServer: boolean = false,
+        openDevTool: boolean = false
+    ) {
         this.name = name;
+        this.statusHost = statusHost
+        this.router = new AppIpc.MainRouter(this.name, ipcMain)
         this.rendererWindow = new BrowserWindow({
             width: 900,
             height: 900,
@@ -20,45 +26,39 @@ export class Session {
             minHeight: 600,
             webPreferences: {
                 nodeIntegration: true,
-                devTools: !app.isPackaged
+                webSecurity: false,
+                devTools: !openDevTool
             }
         })
-
-        this.router = new AppIpc.MainRouter(this.name, ipcMain)
         this.router.registerProcess("renderer", this.rendererWindow)
         // and load the index.html of the app.
         if (useDevServer) {
             this.rendererWindow.loadURL(`http://localhost:8080/index.html?name=${name}`)
         } else {
             this.rendererWindow.loadFile(`www/index.html`,
-            <LoadFileOptions>{
-                search: `?name=${name}`
-            })
+                <LoadFileOptions>{
+                    search: `?name=${name}`
+                })
         }
 
         // Open the DevTools.
         this.rendererWindow.webContents.openDevTools({
             mode: "detach"
         })
+
         // 視窗關閉時會觸發。
         this.rendererWindow.on('closed', () => {
             this.close()
         })
-
     }
 
     /**
      * Close Session 
      */
     public close() {
-        g.sessCenter.remove(this.name)
-        this.cmdCenter = null;
-        this.menuCenter = null;
         this.router.close()
         this.router = null;
-        this.name = null;
-        this.rendererWindow.destroy()
-        delete this.rendererWindow
         this.rendererWindow = null;
+        this.statusHost.fire("session-closed", this.name)
     }
 }

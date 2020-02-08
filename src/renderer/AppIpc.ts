@@ -1,2 +1,2 @@
-export * from "./App/MainRouter"
+export * from "./App/RendererRouter"
 export * from "../shared/AppIpcMessage"

@@ -1,10 +1,12 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { AppIpc } from '../shared/Data';
-import { ipcRenderer, IpcRenderer } from 'electron'
-import { AppIpcRenderer } from './AppIpcRenderer'
+
+import { RendererRouter } from './App/RendererRouter';
+import { Message, Command } from '../shared/AppIpcMessage'
+import * as AppIpc from './AppIpc'
+import * as AppDom from './AppDom';
 import './index.css'
-import { App } from './App';
+import * as AppAudio from './AppAudio';
 
 class GetParameters {
     public name: string;
@@ -13,26 +15,40 @@ class GetParameters {
         this.name = parameters.get('name');
     }
 }
-const get = new GetParameters(location.search)
 
-const ipc = new AppIpcRenderer(get.name)
-window.addEventListener('focus', (ev) => {
+type ExWindow = Window & typeof globalThis & {
+    get: GetParameters
+    router: AppIpc.RendererRouter
+    audioPlayer: AppAudio.AudioPlayer
+}
+const w = (window as ExWindow)
+
+
+w.get = new GetParameters(location.search)
+w.router = new AppIpc.RendererRouter(w.get.name)
+
+w.addEventListener('focus', (ev) => {
     console.log('window focued')
-    AppIpcRenderer.send2main(new AppIpc.Message('renderer', 'sessCenter', new AppIpc.Command(
-        'focus', get.name
-    )))
+    AppIpc.RendererRouter.send2main(new Message('renderer', 'statusHost',
+        new Command(
+            'fire', "session-focus"
+        )))
 });
 
-ipc.onGotMessageFrom("cmdCenter", "update", (req, data)=>{
-    console.log(req)
-    console.log(data)
-})
 
+w.audioPlayer = new AppAudio.AudioPlayer()
 
-function render(){
+w.router.registerHost(w.audioPlayer)
+
+function render() {
     ReactDOM.render(
-        <App title={get.name} render={this}></App>,
+        <AppDom.App title={w.get.name} render={this}></AppDom.App>,
         document.getElementById('main-placehold')
     );
 }
 render()
+
+RendererRouter.send2main(new Message('renderer', 'statusHost',
+    new Command(
+        'fire', "session-ready"
+    )))

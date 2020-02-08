@@ -1,3 +1,5 @@
+
+
 /**
  * App Inter-Process-Communication Command Data Structure
  */
@@ -29,3 +31,5 @@ export class Message {
         this.channel = `${this.sender}-${this.receiver}`
     }
 }
+
+

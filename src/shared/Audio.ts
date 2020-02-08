@@ -6,8 +6,10 @@ import { IAudioMetadata } from 'music-metadata'
  */
 export class Audio {
     public constructor(nativePath: string, metadata?: IAudioMetadata, picture?: string) {
-        this.path = nativePath
-        this.url = pathToFileURL(nativePath).href
+        if (nativePath) {
+            this.path = nativePath
+            this.url = pathToFileURL(nativePath).href
+        }
         if (metadata) {
             this.album = metadata.common.album
             this.albumartist = metadata.common.albumartist
@@ -56,4 +58,29 @@ export class Audio {
     public toString(): string {
         return `Audio[Url: ${this.url}]`;
     }
+
+    public static get empty() {
+        return new Audio(
+            null,
+            null,
+            "img/Ellipses.png"
+        )
+    }
+}
+
+export enum EPlayback {
+    playing,
+    paused,
+    stopped,
+}
+
+export enum ERepeat {
+    off,
+    current,
+    list,
+}
+
+export enum ERandom {
+    off,
+    on
 }

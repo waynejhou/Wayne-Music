@@ -9,7 +9,8 @@
         "compile": "npm run compile:main && npm run compile:renderer",
         "start": "npm run compile && electron .",
         "start:main": "npm run compile:main && electron .",
-        "start:electron": "electron .",
+        "start:electron": "electron . -d",
+        "start:electronSong": "electron . D:\\audio.flac -d",
         "dist": "electron-builder",
         "start:devServer": "webpack-dev-server"
     },
