@@ -1,0 +1,29 @@
+.app#root{
+    display: grid;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-width: 100%;
+    grid-template-columns: fit-content(100px) 1fr;
+    grid-template-rows: 1fr fit-content(200px);
+}
+
+.app.dock{
+    display: grid;
+}
+
+.app#left{
+    grid-row: 1;
+    grid-column: 1;
+}
+
+.app#bottom{
+    grid-row: 2;
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+
+.app#center{
+    grid-row: 1;
+    grid-column: 2;
+}

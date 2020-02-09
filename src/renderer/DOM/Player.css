@@ -1,0 +1,45 @@
+.player#root{
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+}
+
+.player#metadata{
+    grid-column: 1;
+    display: grid
+}
+
+.player#btns{
+    display: flex;
+    flex-direction: row;
+}
+
+.player#control{
+    grid-column: 2;
+    display: grid
+}
+
+.player.button {
+    background-color: var(--main-layer-transparent);
+    border: none;
+    margin: 5px;
+    border-radius: 5px;
+    width: 50px;
+    height: 50px;
+    font-size: 3rem;
+}
+
+.player.button:hover {
+    border: none;
+    background-color: var(--main-layer-transparent-hover);
+}
+
+.player.button:active {
+    background-color: var(--main-layer-transparent-active);
+}
+
+.player.button:focus {
+    outline: none;
+    border: white;
+    border-width: 1px;
+    border-style: dashed;
+}

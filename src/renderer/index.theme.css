@@ -1,0 +1,46 @@
+:root {
+    --main-bg-color: black  ;
+    --main-fg-color: white;
+    --main-layer-transparent: rgba(255, 255, 255, 0.1);
+    --main-layer-transparent-d: rgba(255, 255, 255, 0.2);
+    --main-active-color: rgb(255, 127, 80);
+    --main-layer-transparent-hover: rgba(255, 255, 255, 0.2);
+    --main-layer-transparent-hover-d: rgba(255, 255, 255, 0.3);
+    --main-layer-transparent-active: rgba(255, 127, 80, 0.5);
+    --main-layer-transparent-active-hover: rgba(255, 188, 163, 0.5);
+}
+/*
+:root {
+    --main-bg-color: white;
+    --main-fg-color: black;
+    --main-layer-transparent: rgba(0, 0, 0, 0.05);
+    --main-layer-transparent-d: rgba(0, 0, 0, 0.1);
+    --main-active-color: rgb(255, 127, 80);
+    --main-layer-transparent-hover: rgba(0, 0, 0, 0.1);
+    --main-layer-transparent-hover-d: rgba(0, 0, 0, 0.15);
+    --main-layer-transparent-active: rgba(255, 127, 80, 0.5);
+    --main-layer-transparent-active-hover: rgba(255, 188, 163, 0.5);
+}
+*/
+
+html, body {
+    font-size: 10px;
+    font-family: 'Microsoft JhengHei';
+    text-shadow: 2px 2px 3px var(--main-bg-color);
+    user-select: none;
+    color: var(--main-fg-color);
+    background-color: var(--main-bg-color);
+}
+
+.material-icons {
+    color: var(--main-fg-color);
+    text-shadow: 2px 2px 3px var(--main-bg-color);
+    font-size: inherit;
+    margin-top: 4px;
+}
+
+.container{
+    background-color: var(--main-layer-transparent);
+    margin: 5px;
+    border-radius: 5px;
+}

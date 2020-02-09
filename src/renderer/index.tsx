@@ -6,6 +6,7 @@ import { Message, Command } from '../shared/AppIpcMessage'
 import * as AppIpc from './AppIpc'
 import * as AppDom from './AppDom';
 import './index.css'
+import './index.theme.css'
 import * as AppAudio from './AppAudio';
 
 class GetParameters {
@@ -42,7 +43,7 @@ w.router.registerHost(w.audioPlayer)
 
 function render() {
     ReactDOM.render(
-        <AppDom.App title={w.get.name} render={this}></AppDom.App>,
+        <AppDom.App title={w.get.name}></AppDom.App>,
         document.getElementById('main-placehold')
     );
 }
