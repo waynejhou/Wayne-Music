@@ -1,10 +1,14 @@
 // import from npm module
-import { app, ipcMain, Menu } from 'electron'
+import { app, ipcMain, Menu, BrowserWindow } from 'electron'
+import * as os from 'os'
+import * as path from 'path'
 
 // import from src
 import * as AppIpc from "./AppIpc"
 import * as App from "./App"
 import * as AppHost from "./AppHost"
+
+
 
 // Global 介面擴充，以參照重要物件
 type IExGlobal = NodeJS.Global & {
@@ -40,6 +44,10 @@ g.mainRouter.registerHost(g.menuHost)
 Menu.setApplicationMenu(g.menuHost.menus.index)
 
 g.statusHost.on("electron-ready", (info) => {
+    if(g.commandLineArgs.args.useDevServer){
+        const react_dev_tool_path = path.join(os.homedir(),"AppData/Local", "Google/Chrome/User Data/Profile 1/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.4.0_0")
+        BrowserWindow.addDevToolsExtension(react_dev_tool_path)
+    }
     g.sessionCenter.createSession()
 })
 

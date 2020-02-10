@@ -38,6 +38,8 @@ export const Player: React.FC<PlayerProps> = (props) => {
                         min={0}
                         max={1}
                         value={0.5}
+                        step={0.01}
+                        popup_hint_offsetX = "-10px"
                         valueToString={(v)=>`${Math.floor(v*100)}%`}
                     ></AppDom.Slider>
                 </div>
@@ -46,6 +48,8 @@ export const Player: React.FC<PlayerProps> = (props) => {
                     min={0}
                     max={300}
                     value={0}
+                    step={0.01}
+                    popup_hint_offsetX = "-30px"
                     valueToString={(v) => {
                         let min = ("" + Math.floor(v / 60)).padStart(2, "0")
                         let sec = ("" + Math.floor(v % 60)).padStart(2, "0")

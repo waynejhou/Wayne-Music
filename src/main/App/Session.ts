@@ -30,6 +30,8 @@ export class Session {
                 devTools: !openDevTool
             }
         })
+        
+
         this.router.registerProcess("renderer", this.rendererWindow)
         // and load the index.html of the app.
         if (useDevServer) {

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+
+import * as MathEx from "../Misc/MathEx"
 import './Slider.css'
 
 export class SliderProps {
@@ -8,6 +10,8 @@ export class SliderProps {
     value?: number
     max?: number
     min?: number
+    step?: number
+    popup_hint_offsetX?: number | string
     valueToString?: (v: number) => string
 }
 
@@ -17,16 +21,19 @@ export const Slider: React.FC<SliderProps> = (props) => {
     const [mouseValue, setMouseValue] = useState(0);
     const [max, setMax] = useState(props.max);
     const [min, setMin] = useState(props.min);
-    function onChange() {
-
+    function onChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setValue(event.currentTarget.valueAsNumber)
     }
     function onMouseMove(event: React.MouseEvent<HTMLInputElement, MouseEvent>) {
-        const style =  window.getComputedStyle(event.currentTarget)
+        const style = window.getComputedStyle(event.currentTarget)
         const rect = event.currentTarget.getBoundingClientRect();
         const mouseOffsetX = event.clientX - rect.left
         const mouseValue = mouseOffsetX * (max - min) / parseFloat(style.getPropertyValue('width'))
-        setMouseX(mouseOffsetX)
-        setMouseValue(mouseValue)
+        setMouseX(MathEx.limitToRange(mouseOffsetX, 0, rect.width))
+        setMouseValue(MathEx.limitToRange(mouseValue, min, max))
+    }
+    function onClick() {
+        console.log("clicked")
     }
 
     return (
@@ -40,12 +47,14 @@ export const Slider: React.FC<SliderProps> = (props) => {
             }
             <input type="range" className="slider"
                 min={min} max={max} value={value}
+                step={props.step}
                 onChange={onChange}
                 onMouseMove={onMouseMove}
+                onClick={onClick}
             >
             </input>
             <div className="slider popup_hint"
-                style={{ left: mouseX }}
+                style={{ left: mouseX, top: props.popup_hint_offsetX }}
             >
                 {props.valueToString ?
                     props.valueToString(mouseValue) :

@@ -19,13 +19,14 @@ input.slider {
     border-width: 1px;
 }
 
+/*
 input.slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 2px;
     height: 15px;
     background-color: var(--main-layer-transparent);
 }
-
+*/
 input.slider:focus {
     outline: none;
     border: white;
@@ -45,7 +46,6 @@ input.slider:focus {
     position: absolute;
     z-index: 1;
     opacity: 0;
-    top:-30px;
     background-color: var(--main-layer-transparent);
     padding: 5px;
     font-size: 1.2rem;
