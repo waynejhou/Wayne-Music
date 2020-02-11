@@ -21,6 +21,7 @@ type ExWindow = Window & typeof globalThis & {
     get: GetParameters
     router: AppIpc.RendererRouter
     audioPlayer: AppAudio.AudioPlayer
+    audioPlayerController: AppAudio.AudioPlayerController
 }
 const w = (window as ExWindow)
 
@@ -41,15 +42,25 @@ w.audioPlayer = new AppAudio.AudioPlayer()
 
 w.router.registerHost(w.audioPlayer)
 
+w.audioPlayerController = new AppAudio.AudioPlayerController(w.audioPlayer)
+
+let onceRenderComplete = () => {
+    RendererRouter.send2main(new Message('renderer', 'statusHost',
+        new Command(
+            'fire', "session-ready"
+        )))
+}
+
 function render() {
     ReactDOM.render(
-        <AppDom.App title={w.get.name}></AppDom.App>,
-        document.getElementById('main-placehold')
+        <AppDom.App title={w.get.name} arEmitter={w.audioPlayer}></AppDom.App>,
+        document.getElementById('main-placehold'),()=>{
+            if(onceRenderComplete){
+                onceRenderComplete()
+                onceRenderComplete = undefined
+            }
+        }
     );
 }
 render()
 
-RendererRouter.send2main(new Message('renderer', 'statusHost',
-    new Command(
-        'fire', "session-ready"
-    )))

@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import '../../resources/material-design-icons-3.0.1/iconfont/material-icons.css'
 import * as AppDom from '../AppDom';
 import "./App.css"
+import { BaseProps } from '../BaseProps';
 
-export class AppProps {
+export class AppProps extends BaseProps {
     public title?: string
 }
 
@@ -19,7 +20,7 @@ export const App: React.FC<AppProps> = (props) => {
                 <AppDom.Function></AppDom.Function>
             </div>
             <div id="bottom" className="app dock">
-                <AppDom.Player></AppDom.Player>
+                <AppDom.Player arEmitter={props.arEmitter}></AppDom.Player>
             </div>
             <div id="app-center" className="app dock">
             </div>
