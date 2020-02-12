@@ -133,7 +133,7 @@ export class AudioFactory {
 
     public async loadAudioByPath(fp: string) {
 
-        let uid:string = null;
+        let uid: string = null;
         let metadata: mm.IAudioMetadata = null
         try {
             uid = await this.getFileUid(fp)
@@ -160,14 +160,20 @@ export class AudioFactory {
     }
 
     public async openDialog_loadAudio(win: BrowserWindow = null) {
-        try {
-            const result = await this.openAudioDialog(win)
-            if(result.canceled) return
-            const audios = await this.loadAudiosByPaths(result.filePaths)
-            return audios
-        } catch (error) {
-            console.log(error)
-            return
-        }
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.openAudioDialog(win)
+                if (result.canceled) {
+                    reject("Dialog Canceled");
+                    return;
+                }
+                const audios = await this.loadAudiosByPaths(result.filePaths)
+                resolve(audios)
+            } catch (error) {
+                console.log(error)
+                return
+            }
+        })
+
     }
 }

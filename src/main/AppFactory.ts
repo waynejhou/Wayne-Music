@@ -1,1 +1,1 @@
-export * from "./App/AudioFactory"
+export * from "./AppFactory/AudioFactory"

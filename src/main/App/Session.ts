@@ -7,7 +7,7 @@ import * as AppHost from "../AppHost"
 export class Session {
     public name: string = null;
     private statusHost: AppHost.StatusHost = null;
-    public router: AppIpc.MainRouter = null;
+    public router: App.MainRouter = null;
     public rendererWindow: BrowserWindow = null;
     public constructor(
         name: string,
@@ -18,7 +18,7 @@ export class Session {
     ) {
         this.name = name;
         this.statusHost = statusHost
-        this.router = new AppIpc.MainRouter(this.name, ipcMain)
+        this.router = new App.MainRouter(this.name, ipcMain)
         this.rendererWindow = new BrowserWindow({
             width: 900,
             height: 900,
@@ -61,6 +61,6 @@ export class Session {
         this.router.close()
         this.router = null;
         this.rendererWindow = null;
-        this.statusHost.fire("session-closed", this.name)
+        this.statusHost.sessionClosed.invoke(this, this.name)
     }
 }

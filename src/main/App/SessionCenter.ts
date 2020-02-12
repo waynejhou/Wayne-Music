@@ -8,20 +8,20 @@ export class SessionCenter {
     private lastFocusSessName: string
     private info: App.Info;
     private statusHost: AppHost.StatusHost
-    private ipcMain:IpcMain
+    private ipcMain: IpcMain
     private cliArgs: App.CommandLineArgs
-    public constructor(ipcMain:IpcMain, info: App.Info, cliArgs:App.CommandLineArgs, statusHost:AppHost.StatusHost) {
+    public constructor(ipcMain: IpcMain, info: App.Info, cliArgs: App.CommandLineArgs, statusHost: AppHost.StatusHost) {
         this.lastFocusSessName = null;
         this.sessSet = {};
         this.info = info
         this.statusHost = statusHost
         this.ipcMain = ipcMain
         this.cliArgs = cliArgs
-        this.statusHost.on("session-focus",(sender)=>{
-            this.changeLastFocus(sender)
+        this.statusHost.sessionFoces.do((sender, sessionName) => {
+            this.changeLastFocus(sessionName)
         })
-        this.statusHost.on("session-closed",(sender)=>{
-            delete this.sessSet[sender]
+        this.statusHost.sessionClosed.do((sender, sessionName) => {
+            delete this.sessSet[sessionName]
         })
     }
 

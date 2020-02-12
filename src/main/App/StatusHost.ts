@@ -1,91 +1,36 @@
 import { App } from "electron";
-import * as AppIpc from '../AppIpc'
 import * as AppHost from '../AppHost'
+import { IEventHandler, EventEmitter2HandlerWrapper, EventHandler } from "../../shared/EventHandler";
 
 export class StatusHost implements AppHost.IHost {
     private app: App;
-    private onCallbacks: { [key: string]: Function[] }
-    private onceCallbacks: { [key: string]: Function[] }
-    public hostName: string
+    public mailBox: AppHost.HostMailbox
     public constructor(app: App) {
         this.app = app
-        this.hostName = "statusHost"
-        this.onCallbacks = {}
-        this.onceCallbacks = {}
-    }
-    public onGotCmd(cmd: AppIpc.Command) {
-        if (cmd.action == "fire") {
-            this.fire(cmd.request, cmd.data)
-        }
-    }
-
-    public fire(event: "session-ready", sender: string): void;
-    public fire(event: "session-focus", sender: string): void;
-    public fire(event: "session-closed", sender: string): void;
-    public fire(event: string, param: any): void;
-    public fire(event: string, param: any) {
-        if (this.onCallbacks[event]) {
-            this.onCallbacks[event].forEach(v => v(param))
-        }
-        if (this.onceCallbacks[event]) {
-            this.onceCallbacks[event].forEach(v => v(param))
-            this.onceCallbacks[event] = undefined;
-        }
-    }
-
-    public on(event: "electron-ready", callback: (launchInfo: LaunchInfo) => void): void;
-    public on(event: "electron-window-all-closed", callback: () => void): void;
-    public on(event: "electron-activate", callback: () => void): void;
-    public on(event: "session-ready", callback: (sender: string) => void): void;
-    public on(event: "session-focus", callback: (sender: string) => void): void;
-    public on(event: "session-closed", callback: (sender: string) => void): void;
-    public on(event: string, callback: any) {
-        switch (event) {
-            case "electron-ready":
-                this.app.on('ready', callback)
-                break;
-            case "electron-window-all-closed":
-                this.app.on('window-all-closed', callback)
-                break
-            case "electron-activate":
-                this.app.on('activate', callback)
-                break
-            default:
-                if (!this.onCallbacks[event]) {
-                    this.onCallbacks[event] = []
+        this.mailBox = new AppHost.HostMailbox("statusHost")
+        this.mailBox.commandGot.do((sender, cmd) => {
+            if (cmd.action == "invoke") {
+                const t = this as this & { [key: string]: IEventHandler<any> }
+                if (t[cmd.request]) {
+                    t[cmd.request].invoke(this, cmd.data)
                 }
-                this.onCallbacks[event].push(callback)
-                break;
-        }
+            }else{
+                console.log(`Unknown action [${cmd.action}]`)
+            }
+        })
+        this.electronReady = new EventEmitter2HandlerWrapper("ready", this.app)
+        this.electronWindowAllClosed = new EventEmitter2HandlerWrapper("window-all-closed", this.app)
+        this.electronActivate = new EventEmitter2HandlerWrapper("activate", this.app)
+        this.sessionReady = new EventHandler()
+        this.sessionFoces = new EventHandler()
+        this.sessionClosed = new EventHandler()
     }
-    public once(event: "electron-ready", callback: (launchInfo: LaunchInfo) => void): void;
-    public once(event: "electron-window-all-closed", callback: () => void): void;
-    public once(event: "electron-activate", callback: () => void): void;
-    public once(event: "session-ready", callback: (sender: string) => void): void;
-    public once(event: "session-focus", callback: (sender: string) => void): void;
-    public once(event: "session-closed", callback: (sender: string) => void): void;
-    public once(event: string, callback: any) {
-        switch (event) {
-            case "electron-ready":
-                this.app.once('ready', callback)
-                break;
-            case "electron-window-all-closed":
-                this.app.once('window-all-closed', callback)
-                break
-            case "electron-activate":
-                this.app.once('activate', callback)
-                break
-            default:
-                if (!this.onceCallbacks[event]) {
-                    this.onceCallbacks[event] = []
-                }
-                this.onceCallbacks[event].push(callback)
-                break;
-        }
-    }
-}
 
-export class LaunchInfo {
-    [key: string]: any
+    public electronReady: IEventHandler<unknown>
+    public electronWindowAllClosed: IEventHandler<void>
+    public electronActivate: IEventHandler<void>
+    public sessionReady: IEventHandler<string>
+    public sessionFoces: IEventHandler<string>
+    public sessionClosed: IEventHandler<string>
 }
 

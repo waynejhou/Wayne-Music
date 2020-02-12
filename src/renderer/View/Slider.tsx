@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import * as MathEx from "../Misc/MathEx"
+import * as MathEx from "../Utils/MathEx"
 import './Slider.css'
 
 export class SliderProps {
@@ -13,24 +13,21 @@ export class SliderProps {
     step?: number
     popup_hint_offsetX?: number | string
     valueToString?: (v: number) => string
+    onChanged?: (event: React.ChangeEvent<HTMLInputElement>) => void
+    onMouseUp?: (event: React.MouseEvent<HTMLInputElement>) => void
 }
 
 export const Slider: React.FC<SliderProps> = (props) => {
     const [mouseX, setMouseX] = useState(0);
-    const [value, setValue] = useState(props.value);
     const [mouseValue, setMouseValue] = useState(0);
-    const [max, setMax] = useState(props.max);
-    const [min, setMin] = useState(props.min);
-    function onChange(event: React.ChangeEvent<HTMLInputElement>) {
-        setValue(event.currentTarget.valueAsNumber)
-    }
+
     function onMouseMove(event: React.MouseEvent<HTMLInputElement, MouseEvent>) {
         const style = window.getComputedStyle(event.currentTarget)
         const rect = event.currentTarget.getBoundingClientRect();
         const mouseOffsetX = event.clientX - rect.left
-        const mouseValue = mouseOffsetX * (max - min) / parseFloat(style.getPropertyValue('width'))
+        const mouseValue = mouseOffsetX * (props.max - props.min) / parseFloat(style.getPropertyValue('width'))
         setMouseX(MathEx.limitToRange(mouseOffsetX, 0, rect.width))
-        setMouseValue(MathEx.limitToRange(mouseValue, min, max))
+        setMouseValue(MathEx.limitToRange(mouseValue, props.min, props.max))
     }
     function onClick() {
         console.log("clicked")
@@ -41,15 +38,16 @@ export const Slider: React.FC<SliderProps> = (props) => {
             {props.displayTag &&
                 <div className="slider tag">
                     {props.valueToString ?
-                        props.valueToString(value) :
-                        value}
+                        props.valueToString(props.value) :
+                        props.value}
                 </div>
             }
             <input type="range" className="slider"
-                min={min} max={max} value={value}
+                min={props.min} max={props.max} value={props.value}
                 step={props.step}
-                onChange={onChange}
+                onChange={(ev) => { if (props.onChanged) props.onChanged(ev); }}
                 onMouseMove={onMouseMove}
+                onMouseUp={(ev) => { if (props.onMouseUp) props.onMouseUp(ev); }}
                 onClick={onClick}
             >
             </input>
@@ -63,8 +61,8 @@ export const Slider: React.FC<SliderProps> = (props) => {
             {props.displayTag &&
                 <div className="slider tag">
                     {props.valueToString ?
-                        props.valueToString(max) :
-                        max}
+                        props.valueToString(props.max) :
+                        props.max}
                 </div>
             }
         </div>

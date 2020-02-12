@@ -5,14 +5,8 @@ import * as AppHost from "../AppHost"
 import { Command } from "../AppIpc"
 
 export class MenuHost implements AppHost.IHost {
+    public mailBox: AppHost.HostMailbox;
     public hostName: string = null;
-
-    public onGotCmd(cmd: Command): any {
-        if (cmd.action == 'popup') {
-            this.cmdArgs = { sess: this.sessCenter.get(cmd.data.sessionName) }
-            this.menus[cmd.request].popup()
-        }
-    };
 
     private sessCenter: App.SessionCenter
     private cmdArgs: any = null;
@@ -23,6 +17,13 @@ export class MenuHost implements AppHost.IHost {
     private macMenuHeader: MenuItemConstructorOptions[]
 
     public constructor(info: App.Info, cmds: App.Commands, sessCenter: App.SessionCenter) {
+        this.mailBox = new AppHost.HostMailbox("menuHost")
+        this.mailBox.commandGot.do((cmd) => {
+            if (cmd.action == 'popup') {
+                this.cmdArgs = { sess: this.sessCenter.get(cmd.data.sessionName) }
+                this.menus[cmd.request].popup()
+            }
+        })
         this.sessCenter = sessCenter
         this.cmdArgs = {}
         this.macMenuHeader = (info.isMac ? [{

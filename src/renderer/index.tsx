@@ -1,13 +1,15 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
 
-import { RendererRouter } from './App/RendererRouter';
+import { RendererRouter } from './Utils/RendererRouter';
 import { Message, Command } from '../shared/AppIpcMessage'
 import * as AppIpc from './AppIpc'
-import * as AppDom from './AppDom';
+import { App } from './AppView';
 import './index.css'
 import './index.theme.css'
-import * as AppAudio from './AppAudio';
+import { AudioModel } from './AppAudio';
+import { ipcRenderer } from 'electron';
+import { AudioViewModel } from './AppViewModel';
 
 class GetParameters {
     public name: string;
@@ -19,43 +21,41 @@ class GetParameters {
 
 type ExWindow = Window & typeof globalThis & {
     get: GetParameters
-    router: AppIpc.RendererRouter
-    audioPlayer: AppAudio.AudioPlayer
-    audioPlayerController: AppAudio.AudioPlayerController
+    router: RendererRouter
+    audio: AudioModel
+    audioVM: AudioViewModel
 }
 const w = (window as ExWindow)
 
 
 w.get = new GetParameters(location.search)
-w.router = new AppIpc.RendererRouter(w.get.name)
+w.router = new RendererRouter(w.get.name, ipcRenderer)
 
 w.addEventListener('focus', (ev) => {
     console.log('window focued')
-    AppIpc.RendererRouter.send2main(new Message('renderer', 'statusHost',
+    RendererRouter.send2main(new Message('renderer', 'statusHost',
         new Command(
-            'fire', "session-focus"
+            'invoke', "sessionFocus"
         )))
 });
 
 
-w.audioPlayer = new AppAudio.AudioPlayer()
-
-w.router.registerHost(w.audioPlayer)
-
-w.audioPlayerController = new AppAudio.AudioPlayerController(w.audioPlayer)
+w.audio = new AudioModel()
+w.audioVM = new AudioViewModel(w.audio)
+w.router.registerHost(w.audioVM.mailBox)
 
 let onceRenderComplete = () => {
     RendererRouter.send2main(new Message('renderer', 'statusHost',
         new Command(
-            'fire', "session-ready"
+            'invoke', "sessionReady"
         )))
 }
 
 function render() {
     ReactDOM.render(
-        <AppDom.App title={w.get.name} arEmitter={w.audioPlayer}></AppDom.App>,
-        document.getElementById('main-placehold'),()=>{
-            if(onceRenderComplete){
+        <App title={w.get.name}></App>,
+        document.getElementById('main-placehold'), () => {
+            if (onceRenderComplete) {
                 onceRenderComplete()
                 onceRenderComplete = undefined
             }

@@ -1,3 +1,3 @@
-export * from './App/AudioPlayer'
-export * from './App/AudioPlayerController'
+export * from './Model/AudioModel'
+export * from './ViewModel/AudioViewModel'
 export * from '../shared/Audio'
