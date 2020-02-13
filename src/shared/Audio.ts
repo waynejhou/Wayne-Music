@@ -45,7 +45,7 @@ export class Audio {
 
     public path: string = null;
 
-    public picture: string = "img/Ellipses.png"
+    public picture: string = "src/resources/img/Ellipses.png"
 
     public title: string = null
 
@@ -63,7 +63,7 @@ export class Audio {
         return new Audio(
             null,
             null,
-            "img/Ellipses.png"
+            "src/resources/img/Ellipses.png"
         )
     }
 }
