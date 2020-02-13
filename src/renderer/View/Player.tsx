@@ -12,26 +12,20 @@ export class PlayerProps {
 export const Player: React.FC<PlayerProps> = (props) => {
     const { dataContext } = props
     const audioVM = dataContext as AudioViewModel
-    
-    const playback = useBind<string>("playback", dataContext)
-    const title = useBind<string>("title", dataContext)
-    const album = useBind<string>("album", dataContext)
-    const volume = useBind<number>("volume", dataContext)
-    const seek = useBind<number>("seek", dataContext)
     return (
         <div id="root" className="player container" >
             <div id="metadata" className="player">
-                <div className="player metadata">
-                    {title}
+                <div className="player metadata h1">
+                    {useBind<string>("title", dataContext)}
                 </div>
-                <div className="player metadata">
-                    {album}
+                <div className="player metadata h2">
+                    {useBind<string>("album", dataContext)}
                 </div>
             </div>
             <div id="control" className="player container">
                 <div id="btns" className="player">
                     <button className="player button" onClick={() => { audioVM.ctrlPlayPause() }}>
-                        <i className="material-icons">{playback}</i>
+                        <i className="material-icons">{useBind<string>("playback", dataContext)}</i>
                     </button>
                     <button className="player button">
                         <i className="material-icons">fast_rewind</i>
@@ -48,7 +42,7 @@ export const Player: React.FC<PlayerProps> = (props) => {
                     <AppDom.Slider
                         min={0}
                         max={1}
-                        value={volume}
+                        value={useBind<number>("volume", dataContext)}
                         step={0.01}
                         popup_hint_offsetX="-10px"
                         valueToString={(v) => `${Math.floor(v * 100)}%`}
@@ -58,16 +52,16 @@ export const Player: React.FC<PlayerProps> = (props) => {
                 <AppDom.Slider
                     displayTag={true}
                     min={0}
-                    max={300}
-                    value={seek}
-                    step={0.01}
+                    max={useBind<number>("duration", dataContext)}
+                    value={useBind<number>("seek", dataContext)}
+                    step={0.05}
                     popup_hint_offsetX="-30px"
                     valueToString={(v) => {
                         let min = ("" + Math.floor(v / 60)).padStart(2, "0")
                         let sec = ("" + Math.floor(v % 60)).padStart(2, "0")
                         return `${min}:${sec}`
                     }}
-                    onChanged={(ev) => audioVM.seek = ev.currentTarget.valueAsNumber}
+                    onMouseUp={(ev) => { audioVM.seek = ev.currentTarget.valueAsNumber }}
                 ></AppDom.Slider>
             </div>
         </div>
