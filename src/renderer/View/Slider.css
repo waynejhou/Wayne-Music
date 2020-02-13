@@ -19,17 +19,17 @@ input.slider {
     border-width: 1px;
 }
 
-/*
+
 input.slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 2px;
     height: 15px;
     background-color: var(--main-layer-transparent);
 }
-*/
+
 input.slider:focus {
     outline: none;
-    border: white;
+    border: var(--main-layer-transparent);
     border-width: 1px;
     border-style: dashed;
 }
