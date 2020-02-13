@@ -14,8 +14,8 @@
 [                   後端
   nodejs
   module express    收到 Request
-
-                    讀取(公開或非公開)檔案，整合成網頁
+  ejs
+                    讀取(公開或非公開)檔案，整合成網頁(模板引擎)
 
                     發送 Responds
 
@@ -26,7 +26,7 @@
   jQuery            收到 Responds
   Angular
   Vue               Render 網頁
-
+  React
                     執行 JS
                    ]
 
