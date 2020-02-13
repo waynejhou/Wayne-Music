@@ -5,6 +5,14 @@ import { IEventHandler, EventHandler } from '../../shared/EventHandler'
 function max(a: number, b: number) { return (a > b) ? a : b }
 function min(a: number, b: number) { return (a < b) ? a : b }
 
+export class AudioLoadedEventArgs {
+    current: Audio
+}
+
+export class AudioEndedEventArgs {
+    isManual: boolean
+}
+
 export class AudioModel {
     private howl: Howl
     private _current: Audio
@@ -14,7 +22,8 @@ export class AudioModel {
     private _list: Audio[]
     private _volume: number
     private _lyric: { path: string, data: any }
-    public audioLoaded: IEventHandler<Audio>
+    public audioLoaded: IEventHandler<AudioLoadedEventArgs>
+    public audioEnded: IEventHandler<AudioEndedEventArgs>
     public constructor() {
         this.howl = null;
         this._current = Audio.empty
@@ -25,12 +34,14 @@ export class AudioModel {
         this._volume = 0.01
         this._lyric = null;
         this.audioLoaded = new EventHandler()
+        this.audioEnded = new EventHandler()
     }
     get current() {
         return this._current
     }
     set current(value) {
         if (this.howl) {
+            this.howl.stop()
             this.howl.unload()
             this.howl = null;
         }
@@ -42,14 +53,15 @@ export class AudioModel {
         this.howl.once('load', () => {
             this.playback = EPlayback.playing
             this._current = value
-            this.audioLoaded.invoke(this, this.current)
+            this.audioLoaded.invoke(this, { current: this.current } as AudioLoadedEventArgs)
         })
         this.howl.on('end', () => {
             if (!this.repeat) {
                 this.playback = EPlayback.stopped;
             }
+            this.audioEnded.invoke(this, { isManual: false } as AudioEndedEventArgs)
         })
-        
+
     }
 
     get playback() {
@@ -68,6 +80,11 @@ export class AudioModel {
             this.howl.stop()
         }
         this._playback = value;
+    }
+
+    get duration() {
+        if (this.howl) return this.howl.duration()
+        return 0.001;
     }
 
     get repeat() {
