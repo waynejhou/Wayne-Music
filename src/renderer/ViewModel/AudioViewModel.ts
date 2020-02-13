@@ -8,18 +8,22 @@ export class AudioViewModel extends BaseViewModel implements IHost {
     public constructor(audio: AudioModel) {
         super()
         this.audio = audio
-        audio.audioLoaded.do((sender, current) => {
+        audio.audioLoaded.do((sender, ev) => {
             this.notifyPropChange("title");
             this.notifyPropChange("album");
             this.notifyPropChange("playback");
+            this.notifyPropChange("duration");
+            this.notifyPropChange("picture")
             function monitorSeekChange(seekingAudio:Audio, vm:AudioViewModel){
                 vm.notifyPropChange("seek");
                 if(seekingAudio==vm.current){
                     setTimeout(monitorSeekChange, 33, seekingAudio, vm)
                 }
             }
-            console.log(this)
-            setTimeout(monitorSeekChange, 33, current,this)
+            setTimeout(monitorSeekChange, 33, ev.current,this)
+        })
+        audio.audioEnded.do((sender, ev)=>{
+            this.notifyPropChange("playback");
         })
         this.mailBox = new HostMailbox("audio")
         this.mailBox.commandGot.do((sender, cmd) => {
@@ -41,6 +45,11 @@ export class AudioViewModel extends BaseViewModel implements IHost {
     public set current(value) {
         this.audio.current = value
     }
+
+    public get duration(){
+        return this.audio.duration;
+    }
+
 
     public get title() {
         if (this.audio.current.title)
@@ -93,5 +102,9 @@ export class AudioViewModel extends BaseViewModel implements IHost {
     }
     public set seek(value){
         this.audio.seek = value
+    }
+
+    public get picture(){
+        return this.audio.current.picture
     }
 }
