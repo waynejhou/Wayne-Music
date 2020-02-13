@@ -6,8 +6,8 @@ export type ICommand = (args: any) => void
 
 export class Commands {
     private sessCenter: App.SessionCenter
-    public constructor(info: App.Info, sessCenter: App.SessionCenter) {
-        this.audioFactory = new AppFactory.AudioFactory(info)
+    public constructor(info: App.Info, cmdArg: App.CommandLineArgs, sessCenter: App.SessionCenter) {
+        this.audioFactory = new AppFactory.AudioFactory(info, cmdArg)
         this.sessCenter = sessCenter
     }
 

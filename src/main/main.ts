@@ -36,7 +36,7 @@ g.commandLineArgs = new App.CommandLineArgs(g.statusHost)
 
 g.sessionCenter = new App.SessionCenter(ipcMain, g.info, g.commandLineArgs, g.statusHost);
 
-g.commands = new App.Commands(g.info, g.sessionCenter)
+g.commands = new App.Commands(g.info, g.commandLineArgs, g.sessionCenter)
 
 g.menuHost = new AppHost.MenuHost(g.info, g.commands, g.sessionCenter)
 g.mainRouter.registerHost(g.menuHost.mailBox)

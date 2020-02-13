@@ -13,18 +13,20 @@ class CoverCacheList {
     [fileHash: string]: string
 }
 
+
+const coverCacheDirName = "cover_cache"
 export class AudioFactory {
 
-    public constructor(info: App.Info) {
-        this.initCacheFunction(info)
+    public constructor(info: App.Info, cmdArgs: App.CommandLineArgs) {
+        this.initCacheFunction(info, cmdArgs)
     }
 
     private coverCachePath: string = null;
     private coverCacheListFilePath: string = null
     private coverCacheListFiles: CoverCacheList = null
-
-    private async initCacheFunction(info: App.Info) {
-        this.coverCachePath = path.join(info.exePath, 'cover_cache');
+    private coverCachePathPrefix: string = null;
+    private async initCacheFunction(info: App.Info, cmdArgs: App.CommandLineArgs) {
+        this.coverCachePath = path.join(info.exePath, coverCacheDirName);
         try {
             await fsx.ensureDirPathAvailable(this.coverCachePath)
         } catch (err) {
@@ -51,6 +53,8 @@ export class AudioFactory {
             console.log(`Can't not read Cover Cache List File`);
             throw err
         }
+
+        this.coverCachePathPrefix = cmdArgs.args.useDevServer?`${coverCacheDirName}\\`:`..\\${coverCacheDirName}\\`
     }
 
     public openAudioDialog(win: BrowserWindow = null) {
@@ -82,7 +86,7 @@ export class AudioFactory {
         return new Promise<string>(async (resolve, reject) => {
             const alreadyCached = uid in this.coverCacheListFiles
             if (alreadyCached) {
-                resolve(`${this.coverCacheListFiles[uid]}.png`);
+                resolve(`${this.coverCachePathPrefix}${this.coverCacheListFiles[uid]}.png`);
                 return;
             }
 
@@ -100,7 +104,7 @@ export class AudioFactory {
                 await sharp(data).toFile(cachePath)
                 await fs.promises.appendFile(this.coverCacheListFilePath, `${uid}, ${imgHash}\n`)
                 this.coverCacheListFiles[uid] = imgHash
-                resolve(`${this.coverCacheListFiles[uid]}.png`)
+                resolve(`${this.coverCachePathPrefix}${this.coverCacheListFiles[uid]}.png`)
             } catch (err) {
                 reject(err)
                 return
@@ -160,7 +164,7 @@ export class AudioFactory {
     }
 
     public async openDialog_loadAudio(win: BrowserWindow = null) {
-        return new Promise(async (resolve, reject) => {
+        return new Promise<Audio[]>(async (resolve, reject) => {
             try {
                 const result = await this.openAudioDialog(win)
                 if (result.canceled) {
