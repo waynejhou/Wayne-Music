@@ -8,6 +8,13 @@
     display: grid
 }
 
+.player.metadata.h1{
+    font-size: 3rem;
+}
+.player.metadata.h2{
+    font-size: 2rem;
+}
+
 .player#btns{
     display: flex;
     flex-direction: row;
