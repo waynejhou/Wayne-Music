@@ -10,9 +10,10 @@
         "start": "npm run compile && electron .",
         "start:main": "npm run compile:main && electron .",
         "start:electron": "electron . -d",
-        "start:electronSong": "electron . D:\\audio.flac -d",
-        "dist": "electron-builder",
-        "start:dev": "start /B tsc -w && start /B webpack-dev-server"
+        "dist": "npm run compile && electron-builder && \".\\build\\win-unpacked\\Wayne Music.exe\"",
+        "start:dev": "start /B npm run start:tscWatch && start /B npm run start:webpackDev",
+        "start:webpackDev": "webpack-dev-server",
+        "start:tscWatch": "tsc -w"
     },
     "author": "Wayne Jhou",
     "devDependencies": {

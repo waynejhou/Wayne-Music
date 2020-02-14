@@ -13,16 +13,20 @@ export class AudioViewModel extends BaseViewModel implements IHost {
             this.notifyPropChange("album");
             this.notifyPropChange("playback");
             this.notifyPropChange("duration");
-            this.notifyPropChange("picture")
-            function monitorSeekChange(seekingAudio:Audio, vm:AudioViewModel){
-                vm.notifyPropChange("seek");
-                if(seekingAudio==vm.current){
+            this.notifyPropChange("picture");
+            function monitorSeekChange(seekingAudio: Audio, vm: AudioViewModel) {
+                if (vm.audio.playback == EPlayback.playing) {
+                    vm.notifyPropChange("seek");
+                    vm.notifyPropChange("timeDomainData");
+                    vm.notifyPropChange("frequencyData");
+                }
+                if (seekingAudio == vm.current) {
                     setTimeout(monitorSeekChange, 33, seekingAudio, vm)
                 }
             }
-            setTimeout(monitorSeekChange, 33, ev.current,this)
+            setTimeout(monitorSeekChange, 33, ev.current, this)
         })
-        audio.audioEnded.do((sender, ev)=>{
+        audio.audioEnded.do((sender, ev) => {
             this.notifyPropChange("playback");
         })
         this.mailBox = new HostMailbox("audio")
@@ -37,6 +41,71 @@ export class AudioViewModel extends BaseViewModel implements IHost {
                     break;
             }
         })
+        this.timeDomainDataHistory = new Array()
+        this.frequencyDataHistory = new Array()
+    }
+
+    private timeDomainDataHistory: Array<Float32Array>
+    public get timeDomainData() {
+        const length = 32
+        const historyMax = 5
+        const data = this.audio.timeDomainData
+        let ret = new Float32Array(length).fill(0)
+        const step = data.length / length
+        for (let i = 0; i < length; i++) {
+            for (let j = i * step; j < (i + 1) * step; j++) {
+                ret[i] += data[j]
+            }
+            ret[i] /= step
+        }
+
+        if(historyMax>1){
+            if (this.timeDomainDataHistory.length > historyMax) {
+                this.timeDomainDataHistory.shift()
+            }
+            this.timeDomainDataHistory.push(ret)
+            ret = new Float32Array(length).fill(0)
+            for (let i = 0; i < length; i++) {
+                for (let j = 0; j < this.timeDomainDataHistory.length; j++) {
+                    ret[i] += this.timeDomainDataHistory[j][i]
+                }
+                ret[i] /= this.timeDomainDataHistory.length
+            }
+        }
+        ret = ret.map(v => Math.round(v * 500))
+        return ret
+    }
+
+    private frequencyDataHistory: Array<Float32Array>
+    public get frequencyData() {
+        const length = 32
+        const historyMax = 1
+        const data = this.audio.frequencyData
+        let ret = new Float32Array(length).fill(0)
+        const step = data.length / length
+        for (let i = 0; i < ret.length; i++) {
+            for (let j = i * step; j < (i + 1) * step; j++) {
+                ret[i] += data[j]
+            }
+            ret[i] /= step
+        }
+
+        if(historyMax>1){
+            if (this.frequencyDataHistory.length > historyMax) {
+                this.frequencyDataHistory.shift()
+            }
+            this.frequencyDataHistory.push(ret)
+            ret = new Float32Array(length).fill(0)
+            for (let i = 0; i < length; i++) {
+                for (let j = 0; j < this.frequencyDataHistory.length; j++) {
+                    ret[i] += this.frequencyDataHistory[j][i]
+                }
+                ret[i] /= this.frequencyDataHistory.length
+                
+            }
+        }
+        ret = ret.map(v => Math.round(-v)-150)
+        return ret
     }
 
     public get current() {
@@ -46,7 +115,7 @@ export class AudioViewModel extends BaseViewModel implements IHost {
         this.audio.current = value
     }
 
-    public get duration(){
+    public get duration() {
         return this.audio.duration;
     }
 
@@ -97,14 +166,14 @@ export class AudioViewModel extends BaseViewModel implements IHost {
         this.volume -= 0.05
     }
 
-    public get seek(){
+    public get seek() {
         return this.audio.seek
     }
-    public set seek(value){
+    public set seek(value) {
         this.audio.seek = value
     }
 
-    public get picture(){
+    public get picture() {
         return this.audio.current.picture
     }
 }

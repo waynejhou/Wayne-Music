@@ -26,4 +26,6 @@
 .app#center{
     grid-row: 1;
     grid-column: 2;
+    max-height: 100%;
+    overflow-y: hidden
 }

@@ -24,7 +24,7 @@ export class Audio {
             this.year = metadata.common.year
         }
         if (picture) {
-            this.picture = picture
+            this.picture = pathToFileURL(picture).href
         }
     }
     public album: string = null
@@ -45,7 +45,7 @@ export class Audio {
 
     public path: string = null;
 
-    public picture: string = "src/resources/img/Ellipses.png"
+    public picture: string = null;
 
     public title: string = null
 
@@ -58,15 +58,9 @@ export class Audio {
     public toString(): string {
         return `Audio[Url: ${this.url}]`;
     }
-
-    public static get empty() {
-        return new Audio(
-            null,
-            null,
-            "src/resources/img/Ellipses.png"
-        )
-    }
+    public static EMPTY:Audio = null
 }
+Audio.EMPTY = Object.seal(new Audio(null, null, null))
 
 export enum EPlayback {
     playing,

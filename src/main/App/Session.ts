@@ -23,11 +23,11 @@ export class Session {
             width: 900,
             height: 900,
             minWidth: 800,
-            minHeight: 600,
+            minHeight: 800,
             webPreferences: {
                 nodeIntegration: true,
                 webSecurity: false,
-                devTools: !openDevTool
+                devTools: openDevTool
             }
         })
         
@@ -35,7 +35,7 @@ export class Session {
         this.router.registerProcess("renderer", this.rendererWindow)
         // and load the index.html of the app.
         if (useDevServer) {
-            this.rendererWindow.loadURL(`http://localhost:8080/index.html?name=${name}`)
+            this.rendererWindow.loadURL(`http://localhost:8080/?name=${name}`)
         } else {
             this.rendererWindow.loadFile(`www/index.html`,
                 <LoadFileOptions>{

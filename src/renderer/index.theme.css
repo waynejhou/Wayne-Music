@@ -44,3 +44,7 @@ html, body {
     margin: 5px;
     border-radius: 5px;
 }
+
+img{
+    -webkit-user-drag: none;
+}

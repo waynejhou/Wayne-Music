@@ -14,7 +14,7 @@ class CoverCacheList {
 }
 
 
-const coverCacheDirName = "cover_cache"
+const coverCacheDirName = path.join("www", "cover_path")
 export class AudioFactory {
 
     public constructor(info: App.Info, cmdArgs: App.CommandLineArgs) {
@@ -54,7 +54,7 @@ export class AudioFactory {
             throw err
         }
 
-        this.coverCachePathPrefix = cmdArgs.args.useDevServer?`${coverCacheDirName}\\`:`..\\${coverCacheDirName}\\`
+        this.coverCachePathPrefix = path.join(info.exePath, coverCacheDirName)
     }
 
     public openAudioDialog(win: BrowserWindow = null) {
@@ -86,7 +86,7 @@ export class AudioFactory {
         return new Promise<string>(async (resolve, reject) => {
             const alreadyCached = uid in this.coverCacheListFiles
             if (alreadyCached) {
-                resolve(`${this.coverCachePathPrefix}${this.coverCacheListFiles[uid]}.png`);
+                resolve(path.join(this.coverCachePathPrefix, `${this.coverCacheListFiles[uid]}.png`));
                 return;
             }
 
@@ -104,7 +104,7 @@ export class AudioFactory {
                 await sharp(data).toFile(cachePath)
                 await fs.promises.appendFile(this.coverCacheListFilePath, `${uid}, ${imgHash}\n`)
                 this.coverCacheListFiles[uid] = imgHash
-                resolve(`${this.coverCachePathPrefix}${this.coverCacheListFiles[uid]}.png`)
+                resolve(path.join(this.coverCachePathPrefix, `${this.coverCacheListFiles[uid]}.png`));
             } catch (err) {
                 reject(err)
                 return

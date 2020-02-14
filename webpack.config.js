@@ -16,19 +16,30 @@ module.exports = [
                         loader: 'babel-loader'
                     },
                 },
-
                 // css-loader to bundle all the css files into one file and style-loader to add all the styles  inside the style tag of the document
                 {
                     test: /\.css$/,
-                    use: ['style-loader', 'css-loader']
+                    use: ['style-loader', 'css-loader'],
+
                 },
                 {
-                    test: /\.(svg|eot|woff|ttf|svg|woff2|png)$/,
+                    test: /\.(svg|eot|woff|ttf|svg|woff2)$/,
                     use: [
                         {
                             loader: 'file-loader',
                             options: {
-                                name: "[path][name].[ext]"
+                                name: "font/[name].[ext]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.(png)$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: "img/[name].[ext]"
                             }
                         }
                     ]

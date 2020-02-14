@@ -53,7 +53,7 @@ export class SessionCenter {
             this.ipcMain,
             this.statusHost,
             this.cliArgs.args.useDevServer,
-            this.info.isPackaged)
+            !this.info.isPackaged)
         this.sessSet[sessName] = sess
         this.changeLastFocus(sessName)
     }

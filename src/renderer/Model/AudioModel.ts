@@ -1,4 +1,4 @@
-import { Howl } from 'howler'
+import { Howl, Howler } from 'howler'
 import { Audio, EPlayback, ERandom, ERepeat } from '../AppAudio'
 import { IEventHandler, EventHandler } from '../../shared/EventHandler'
 
@@ -8,7 +8,6 @@ function min(a: number, b: number) { return (a < b) ? a : b }
 export class AudioLoadedEventArgs {
     current: Audio
 }
-
 export class AudioEndedEventArgs {
     isManual: boolean
 }
@@ -24,9 +23,12 @@ export class AudioModel {
     private _lyric: { path: string, data: any }
     public audioLoaded: IEventHandler<AudioLoadedEventArgs>
     public audioEnded: IEventHandler<AudioEndedEventArgs>
+    private analyser: AnalyserNode
+    private timeDomainDataBuffer: Float32Array
+    private frequencyDataBuffer: Float32Array
     public constructor() {
         this.howl = null;
-        this._current = Audio.empty
+        this._current = Audio.EMPTY
         this._playback = EPlayback.stopped
         this._repeat = ERepeat.off
         this._random = ERandom.off
@@ -36,10 +38,22 @@ export class AudioModel {
         this.audioLoaded = new EventHandler()
         this.audioEnded = new EventHandler()
     }
-    get current() {
+    public get timeDomainData(){
+        if(!this.analyser) return new Float32Array(2048)
+        this.analyser.getFloatTimeDomainData(this.timeDomainDataBuffer)
+        return this.timeDomainDataBuffer
+    }
+    public get frequencyData(){
+        if(!this.analyser) return new Float32Array(2048)
+        this.analyser.getFloatFrequencyData(this.frequencyDataBuffer)
+        return this.frequencyDataBuffer
+    }
+
+
+    public get current() {
         return this._current
     }
-    set current(value) {
+    public set current(value) {
         if (this.howl) {
             this.howl.stop()
             this.howl.unload()
@@ -50,6 +64,14 @@ export class AudioModel {
             volume: this.volume,
             loop: this.repeat == ERepeat.current
         })
+        this.repeat = ERepeat.current
+        this.analyser = Howler.ctx.createAnalyser()
+        Howler.masterGain.connect(this.analyser);
+        this.analyser.connect(Howler.ctx.destination);
+        this.analyser.fftSize = 2048;
+        const bufferLength = this.analyser.frequencyBinCount;
+        this.timeDomainDataBuffer = new Float32Array(bufferLength);
+        this.frequencyDataBuffer = new Float32Array(bufferLength);
         this.howl.once('load', () => {
             this.playback = EPlayback.playing
             this._current = value
@@ -64,10 +86,10 @@ export class AudioModel {
 
     }
 
-    get playback() {
+    public get playback() {
         return this._playback;
     }
-    set playback(value) {
+    public set playback(value) {
         if (!this.howl) return;
         if (!(value in EPlayback)) return;
         if (value == EPlayback.playing) {
@@ -82,33 +104,33 @@ export class AudioModel {
         this._playback = value;
     }
 
-    get duration() {
+    public get duration() {
         if (this.howl) return this.howl.duration()
         return 0.001;
     }
 
-    get repeat() {
+    public get repeat() {
         return this._repeat
     }
-    set repeat(value) {
+    public set repeat(value) {
         if (!this.howl) return
         this.howl.loop(value == ERepeat.current)
         this._repeat = value
     }
 
-    get random() {
+    public get random() {
         return this._random;
     }
-    set random(value) {
+    public set random(value) {
         if (!this.howl) return
         this._random = value
     }
 
-    get seek() {
+    public get seek() {
         if (this.howl) return <number>this.howl.seek()
         return 0
     }
-    set seek(value) {
+    public set seek(value) {
         if (!this.howl) return
         if (value >= this.current.duration) {
             value = this.current.duration -= 0.05
@@ -117,25 +139,24 @@ export class AudioModel {
         this.howl.seek(value);
     }
 
-    get list() {
+    public get list() {
         return this._list
     }
 
-    get volume() {
+    public get volume() {
         if (this.howl) return this.howl.volume();
         return this._volume;
     }
-    set volume(value) {
+    public set volume(value) {
         let val = max(0, min(1, value))
-        console.log(val)
         this._volume = val;
         if (this.howl) this.howl.volume(val);
     }
 
-    get lyric() {
+    public get lyric() {
         return this._lyric;
     }
-    set lyric(value) {
+    public set lyric(value) {
         this._lyric = value;
     }
 
