@@ -73,7 +73,7 @@ export class FileReadLinesResult {
  * @param filePath 文字檔案路徑
  * @param encoding 編碼（預設為`"auto"`：自動偵測）
  */
-export function readFileLines(filePath: string, encoding: string = "auto") {
+export function readFileLines(filePath: string, encoding: string|"auto" = "auto") {
     return new Promise<FileReadLinesResult>(async (resolve, reject) => {
         try {
             const buffer = await fs.promises.readFile(filePath)

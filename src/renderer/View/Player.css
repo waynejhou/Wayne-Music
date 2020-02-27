@@ -5,15 +5,11 @@
 
 .player#metadata{
     grid-column: 1;
-    display: grid
+    display: grid;
+    overflow:hidden;
+    white-space: nowrap
 }
 
-.player.metadata.h1{
-    font-size: 3rem;
-}
-.player.metadata.h2{
-    font-size: 2rem;
-}
 
 .player#btns{
     display: flex;
@@ -49,4 +45,36 @@
     border: white;
     border-width: 1px;
     border-style: dashed;
+}
+
+.player.metadata.title{
+    position: relative;
+    font-size: 3rem;
+}
+.player.metadata.album{
+    position: relative;
+    font-size: 2rem;
+}
+
+.title-moving1.metadata.player{
+    width: fit-content;
+    position: absolute;
+    padding-right: 25px;
+}
+.title-moving2.metadata.player{
+    width: fit-content;
+    position: absolute;
+    padding-right: 25px;
+}
+
+
+.album-moving1.metadata.player{
+    width: fit-content;
+    position: absolute;
+    padding-right: 25px;
+}
+.album-moving2.metadata.player{
+    width: fit-content;
+    position: absolute;
+    padding-right: 25px;
 }

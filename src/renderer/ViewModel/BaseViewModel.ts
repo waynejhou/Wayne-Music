@@ -8,6 +8,7 @@ export class BaseViewModel implements INotifyPropChanged {
     }
 
     protected notifyPropChange(propName: string) {
-        this.onPropChanged.invoke(this, new PropertyChangedEventArgs(propName))
+        if (this.onPropChanged.invokable)
+            this.onPropChanged.invoke(this, new PropertyChangedEventArgs(propName))
     }
 }

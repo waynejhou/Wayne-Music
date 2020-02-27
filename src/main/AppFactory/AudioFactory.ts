@@ -17,15 +17,15 @@ class CoverCacheList {
 const coverCacheDirName = path.join("www", "cover_path")
 export class AudioFactory {
 
-    public constructor(info: App.Info, cmdArgs: App.CommandLineArgs) {
-        this.initCacheFunction(info, cmdArgs)
+    public constructor(info: App.Info) {
+        this.initCacheFunction(info)
     }
 
     private coverCachePath: string = null;
     private coverCacheListFilePath: string = null
     private coverCacheListFiles: CoverCacheList = null
     private coverCachePathPrefix: string = null;
-    private async initCacheFunction(info: App.Info, cmdArgs: App.CommandLineArgs) {
+    private async initCacheFunction(info: App.Info) {
         this.coverCachePath = path.join(info.exePath, coverCacheDirName);
         try {
             await fsx.ensureDirPathAvailable(this.coverCachePath)
@@ -131,8 +131,11 @@ export class AudioFactory {
         })
     }
 
-    public loadAudiosByPaths(filePaths: string[]) {
-        return Promise.all(filePaths.map((fp) => this.loadAudioByPath(fp)))
+    public async * loadAudiosByPaths(filePaths: string[]): AsyncGenerator<Audio, void, Audio> {
+        for (let i = 0; i < filePaths.length; i++) {
+            yield (await this.loadAudioByPath(filePaths[i]))
+        }
+        return
     }
 
     public async loadAudioByPath(fp: string) {
@@ -145,14 +148,14 @@ export class AudioFactory {
             const parseOptions: mm.IOptions = {
                 duration: false,
                 skipCovers: alreadyCached,
-                skipPostHeaders: true
+                skipPostHeaders: true,
+
             }
             metadata = await mm.parseFile(fp, parseOptions)
         } catch (err) {
             console.log(err)
             return new Audio(fp)
         }
-
         let coverPath: string = null;
         try {
             coverPath = await this.generateCache(uid, metadata)
@@ -163,21 +166,19 @@ export class AudioFactory {
         return new Audio(fp, metadata, coverPath)
     }
 
-    public async openDialog_loadAudio(win: BrowserWindow = null) {
-        return new Promise<Audio[]>(async (resolve, reject) => {
-            try {
-                const result = await this.openAudioDialog(win)
-                if (result.canceled) {
-                    reject("Dialog Canceled");
-                    return;
-                }
-                const audios = await this.loadAudiosByPaths(result.filePaths)
-                resolve(audios)
-            } catch (error) {
-                console.log(error)
-                return
-            }
-        })
+    public async * openDialog_loadAudio(win: BrowserWindow = null):AsyncGenerator<Audio,void, Audio> {
+        const result = await this.openAudioDialog(win)
+        if (result.canceled) { return }
+        for await (const audio of this.loadAudiosByPaths(result.filePaths)) {
+            yield audio
+        }
+        return
+    }
+}
 
+function* countAppleSales(): Generator<number, void, number> {
+    var saleList = [3, 7, 5];
+    for (var i = 0; i < saleList.length; i++) {
+        yield saleList[i];
     }
 }

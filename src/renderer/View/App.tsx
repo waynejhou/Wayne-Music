@@ -8,6 +8,8 @@ import "./App.css"
 import { AudioViewModel } from '../AppViewModel';
 import { useBind } from '../Utils/ReactBindHook';
 import { ImageBackground } from './ImageBackground';
+import { DropDownToast } from './DropDownToast';
+import { Toast } from '../../shared/Toast';
 
 export class AppProps {
     public title?: string
@@ -17,9 +19,9 @@ export const App: React.FC<AppProps> = (props) => {
     const w = window as Window & typeof globalThis & { audioVM: AudioViewModel }
     const picture = useBind<string>("picture", window["audioVM"])
     document.title = `${useBind<string>("title", window["audioVM"])} - Wayne Music`
-    const [switchIdx, setSwitchIdx] = useState(0)
+    const [switchIdx, setSwitchIdx] = useState(2)
     return (
-        <div id='root' className='app'>
+        <div id='root' className='app' onContextMenu={(ev)=>{window["toastVM"].dropToast(new Toast(300,5000, `Test Message ${Date.now()}`))}}>
             <div id="left" className="app dock">
                 <AppView.Function onClickFunction={(idx) => { setSwitchIdx(idx) }}>
                 </AppView.Function>
@@ -29,14 +31,10 @@ export const App: React.FC<AppProps> = (props) => {
             </div>
             <div id="app-center" className="app dock">
                 <ImageBackground src={picture ? picture : "img/Ellipses.png"}>
-                    <AppView.Switch idx={switchIdx}>
-                        <AppView.Cover
-                            src={picture ? picture : "img/Ellipses.png"}
-                            wavedata={useBind<Float32Array>("timeDomainData", window["audioVM"])}
-                        ></AppView.Cover>
-                        <div>asd</div>
-                    </AppView.Switch>
                 </ImageBackground>
+                <AppView.Switch idx={switchIdx}>
+                </AppView.Switch>
+                <DropDownToast></DropDownToast>
             </div>
         </div >
     )

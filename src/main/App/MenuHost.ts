@@ -1,6 +1,7 @@
 import { Menu, MenuItemConstructorOptions } from "electron";
 
 import * as App from "../App"
+import * as AppSess from "../AppSess"
 import * as AppHost from "../AppHost"
 import { Command } from "../AppIpc"
 
@@ -8,7 +9,7 @@ export class MenuHost implements AppHost.IHost {
     public mailBox: AppHost.HostMailbox;
     public hostName: string = null;
 
-    private sessCenter: App.SessionCenter
+    private sessCenter: AppSess.SessionCenter
     private cmdArgs: any = null;
 
     public menuItems: { [name: string]: MenuItemConstructorOptions };
@@ -16,7 +17,7 @@ export class MenuHost implements AppHost.IHost {
 
     private macMenuHeader: MenuItemConstructorOptions[]
 
-    public constructor(info: App.Info, cmds: App.Commands, sessCenter: App.SessionCenter) {
+    public constructor(info: App.Info, cmds: App.Commands, sessCenter: AppSess.SessionCenter) {
         this.mailBox = new AppHost.HostMailbox("menuHost")
         this.mailBox.commandGot.do((cmd) => {
             if (cmd.action == 'popup') {

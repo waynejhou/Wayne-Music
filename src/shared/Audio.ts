@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'url'
 import { IAudioMetadata } from 'music-metadata'
+import * as path from 'path'
 
 /**
  * Audio Data Structure
@@ -8,7 +9,13 @@ export class Audio {
     public constructor(nativePath: string, metadata?: IAudioMetadata, picture?: string) {
         if (nativePath) {
             this.path = nativePath
-            this.url = pathToFileURL(nativePath).href
+            if(this.path.startsWith("\\\\")){
+                this.url = `file:${this.path.replace(/\\/gm,"/",)}`
+            }else{
+                this.url = pathToFileURL(nativePath).href
+            }
+            
+            
         }
         if (metadata) {
             this.album = metadata.common.album
@@ -77,4 +84,8 @@ export enum ERepeat {
 export enum ERandom {
     off,
     on
+}
+
+export enum EAudioModelState{
+    idle, loading
 }

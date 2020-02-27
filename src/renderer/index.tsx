@@ -9,7 +9,7 @@ import './index.css'
 import './index.theme.css'
 import { AudioModel } from './AppAudio';
 import { ipcRenderer } from 'electron';
-import { AudioViewModel } from './AppViewModel';
+import { AudioViewModel, LyricViewModel, ToastViewModel, ListViewModel } from './AppViewModel';
 
 class GetParameters {
     public name: string;
@@ -24,6 +24,9 @@ type ExWindow = Window & typeof globalThis & {
     router: RendererRouter
     audio: AudioModel
     audioVM: AudioViewModel
+    lyricVM: LyricViewModel
+    toastVM: ToastViewModel
+    listVM: ListViewModel
 }
 const w = (window as ExWindow)
 
@@ -41,8 +44,17 @@ w.addEventListener('focus', (ev) => {
 
 
 w.audio = new AudioModel()
-w.audioVM = new AudioViewModel(w.audio)
+w.audioVM = new AudioViewModel(w.router, w.audio)
 w.router.registerHost(w.audioVM.mailBox)
+
+w.lyricVM = new LyricViewModel()
+w.router.registerHost(w.lyricVM.mailBox)
+
+w.toastVM = new ToastViewModel()
+w.router.registerHost(w.toastVM.mailBox)
+
+w.listVM = new ListViewModel()
+w.router.registerHost(w.listVM.mailBox)
 
 let onceRenderComplete = () => {
     RendererRouter.send2main(new Message('renderer', 'statusHost',

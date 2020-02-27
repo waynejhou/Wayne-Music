@@ -1,14 +1,20 @@
 import { AudioModel, Audio, EPlayback, ERandom, ERepeat } from '../AppAudio'
 import { BaseViewModel } from './BaseViewModel'
 import { IHost, HostMailbox } from '../AppHost'
+import * as ArrayEx from '../Utils/ArrayEx'
+import { RendererRouter } from '../Utils/RendererRouter'
+import { Message, Command } from '../../shared/AppIpcMessage'
 
 export class AudioViewModel extends BaseViewModel implements IHost {
     mailBox: HostMailbox
     private audio: AudioModel
-    public constructor(audio: AudioModel) {
+    public constructor(route: RendererRouter, audio: AudioModel) {
         super()
         this.audio = audio
         audio.audioLoaded.do((sender, ev) => {
+            route.send(new Message("audio", "statusHost", new Command(
+                "invoke", "audioLoaded", this.audio.current
+            )))
             this.notifyPropChange("title");
             this.notifyPropChange("album");
             this.notifyPropChange("playback");
@@ -21,20 +27,19 @@ export class AudioViewModel extends BaseViewModel implements IHost {
                     vm.notifyPropChange("frequencyData");
                 }
                 if (seekingAudio == vm.current) {
-                    setTimeout(monitorSeekChange, 33, seekingAudio, vm)
+                    setTimeout(monitorSeekChange, 41, seekingAudio, vm)
                 }
             }
-            setTimeout(monitorSeekChange, 33, ev.current, this)
+            setTimeout(monitorSeekChange, 100, ev.current, this)
         })
         audio.audioEnded.do((sender, ev) => {
             this.notifyPropChange("playback");
         })
         this.mailBox = new HostMailbox("audio")
         this.mailBox.commandGot.do((sender, cmd) => {
-            console.log(cmd)
             switch (cmd.action) {
                 case 'update':
-                    this[cmd.request] = cmd.data
+                    this.audio[cmd.request] = cmd.data
                     break;
                 default:
                     console.log(`Unrecognized Action [${cmd.action}]`)
@@ -47,72 +52,20 @@ export class AudioViewModel extends BaseViewModel implements IHost {
 
     private timeDomainDataHistory: Array<Float32Array>
     public get timeDomainData() {
-        const length = 32
-        const historyMax = 5
-        const data = this.audio.timeDomainData
-        let ret = new Float32Array(length).fill(0)
-        const step = data.length / length
-        for (let i = 0; i < length; i++) {
-            for (let j = i * step; j < (i + 1) * step; j++) {
-                ret[i] += data[j]
-            }
-            ret[i] /= step
-        }
-
-        if(historyMax>1){
-            if (this.timeDomainDataHistory.length > historyMax) {
-                this.timeDomainDataHistory.shift()
-            }
-            this.timeDomainDataHistory.push(ret)
-            ret = new Float32Array(length).fill(0)
-            for (let i = 0; i < length; i++) {
-                for (let j = 0; j < this.timeDomainDataHistory.length; j++) {
-                    ret[i] += this.timeDomainDataHistory[j][i]
-                }
-                ret[i] /= this.timeDomainDataHistory.length
-            }
-        }
-        ret = ret.map(v => Math.round(v * 500))
-        return ret
+        return this.audio.timeDomainData
     }
 
     private frequencyDataHistory: Array<Float32Array>
     public get frequencyData() {
-        const length = 32
-        const historyMax = 1
-        const data = this.audio.frequencyData
-        let ret = new Float32Array(length).fill(0)
-        const step = data.length / length
-        for (let i = 0; i < ret.length; i++) {
-            for (let j = i * step; j < (i + 1) * step; j++) {
-                ret[i] += data[j]
-            }
-            ret[i] /= step
-        }
-
-        if(historyMax>1){
-            if (this.frequencyDataHistory.length > historyMax) {
-                this.frequencyDataHistory.shift()
-            }
-            this.frequencyDataHistory.push(ret)
-            ret = new Float32Array(length).fill(0)
-            for (let i = 0; i < length; i++) {
-                for (let j = 0; j < this.frequencyDataHistory.length; j++) {
-                    ret[i] += this.frequencyDataHistory[j][i]
-                }
-                ret[i] /= this.frequencyDataHistory.length
-                
-            }
-        }
-        ret = ret.map(v => Math.round(-v)-150)
-        return ret
+        return this.audio.frequencyData
     }
 
     public get current() {
         return this.audio.current;
     }
+
     public set current(value) {
-        this.audio.current = value
+        this.audio.current = value;
     }
 
     public get duration() {
@@ -171,6 +124,7 @@ export class AudioViewModel extends BaseViewModel implements IHost {
     }
     public set seek(value) {
         this.audio.seek = value
+        this.notifyPropChange("seek");
     }
 
     public get picture() {
