@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useEffect } from "react";
-import '../../resources/material-design-icons-3.0.1/iconfont/material-icons.css'
 import '../../resources/img/Ellipses.png'
 import * as AppView from '../AppView';
 import "./App.css"

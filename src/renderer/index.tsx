@@ -1,6 +1,5 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-
 import { RendererRouter } from './Utils/RendererRouter';
 import { Message, Command } from '../shared/AppIpcMessage'
 import * as AppIpc from './AppIpc'
@@ -10,6 +9,7 @@ import './index.theme.css'
 import { AudioModel } from './AppAudio';
 import { ipcRenderer } from 'electron';
 import { AudioViewModel, LyricViewModel, ToastViewModel, ListViewModel } from './AppViewModel';
+import { Audio } from '../shared/Audio';
 
 class GetParameters {
     public name: string;

@@ -77,8 +77,8 @@ export enum EPlayback {
 
 export enum ERepeat {
     off,
-    current,
     list,
+    current,
 }
 
 export enum ERandom {

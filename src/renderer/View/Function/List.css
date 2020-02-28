@@ -37,7 +37,7 @@
     padding-right: 10px;
     font-size: 2.0rem;
     white-space: nowrap;
-    grid-template-columns: min-content 1fr 1fr fit-content(100px);
+    grid-template-columns: min-content fit-content(25px) 1fr 1fr fit-content(100px);
     grid-template-rows: 1fr;
     border-top: 0px;
     border-left: 0px;
@@ -63,3 +63,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+
+

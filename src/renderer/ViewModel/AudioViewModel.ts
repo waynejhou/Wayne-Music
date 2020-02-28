@@ -4,6 +4,8 @@ import { IHost, HostMailbox } from '../AppHost'
 import * as ArrayEx from '../Utils/ArrayEx'
 import { RendererRouter } from '../Utils/RendererRouter'
 import { Message, Command } from '../../shared/AppIpcMessage'
+import { ToastViewModel } from './ToastViewModel'
+import { Toast } from '../../shared/Toast'
 
 export class AudioViewModel extends BaseViewModel implements IHost {
     mailBox: HostMailbox
@@ -85,12 +87,7 @@ export class AudioViewModel extends BaseViewModel implements IHost {
     }
 
     public get playback() {
-        if (this.audio.playback == EPlayback.paused)
-            return "play_arrow"
-        if (this.audio.playback == EPlayback.playing)
-            return "pause"
-        if (this.audio.playback == EPlayback.stopped)
-            return "play_arrow"
+        return this.audio.playback
     }
     public ctrlPlayPause() {
         if (this.audio.playback == EPlayback.paused) {
@@ -129,5 +126,38 @@ export class AudioViewModel extends BaseViewModel implements IHost {
 
     public get picture() {
         return this.audio.current.picture
+    }
+
+    public get repeat() {
+        return this.audio.repeat
+    }
+    public ctrlRepeat() {
+        this.audio.repeat = (this.audio.repeat + 1) % 3
+        this.notifyPropChange("repeat");
+        switch (this.repeat) {
+            case ERepeat.off:
+                window["toastVM"].dropToast(
+                    new Toast(0, 1000, `Repeat Off`))
+                break;
+            case ERepeat.current:
+                window["toastVM"].dropToast(
+                    new Toast(0, 1000, `Repeat Current Playing`))
+                break;
+            case ERepeat.list:
+                window["toastVM"].dropToast(
+                    new Toast(0, 1000, `Repeat List`))
+                break;
+        }
+
+    }
+
+    public get random() {
+        return this.audio.random
+    }
+    public ctrlRandom() {
+        this.audio.random = (this.audio.random + 1) % 2
+        this.notifyPropChange("random");
+        window["toastVM"].dropToast(
+            new Toast(0, 1000, `Random ${this.random == 0 ? "off" : "on"}`))
     }
 }

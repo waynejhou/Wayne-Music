@@ -28,3 +28,11 @@
     border-width: 1px;
     border-style: dashed;
 }
+
+.function.button{
+    display: grid;
+}
+.function.button-icon{
+    margin: auto;
+    fill: var(--main-fg-color);
+}

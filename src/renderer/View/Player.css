@@ -78,3 +78,30 @@
     position: absolute;
     padding-right: 25px;
 }
+
+
+div.player-icon[data-icon="play_arrow"]{
+    width: 25px;
+    height: 25px;
+    background-position: center;
+    background: url(
+        'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="25px" height="25px" fill="white"><polygon points="5 5 5 20 20 12.5"></polygon></svg>'
+    );
+}
+div.player-icon[data-icon="pause"]{
+    min-width:25px;min-height:25px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.player.button{
+    display: grid;
+}
+.player.button-icon{
+    margin: auto;
+    fill: var(--main-fg-color);
+}
+.player.button-icon[data-enable="false"]{
+    margin: auto;
+    fill: var(--main-layer-transparent-d)
+}

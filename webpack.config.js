@@ -23,12 +23,23 @@ module.exports = [
 
                 },
                 {
-                    test: /\.(svg|eot|woff|ttf|svg|woff2)$/,
+                    test: /\.(eot|woff|ttf|woff2)$/,
                     use: [
                         {
                             loader: 'file-loader',
                             options: {
                                 name: "font/[name].[ext]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.(svg)$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: "svg/[name].[ext]"
                             }
                         }
                     ]

@@ -20,7 +20,8 @@ const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
     app.quit()
     process.exit(0)
-} else {
+}
+else {
     // Global 介面擴充，以參照重要物件
     type IExGlobal = NodeJS.Global & {
         mainRouter: App.MainRouter,
@@ -55,43 +56,52 @@ if (!gotTheLock) {
 
     Menu.setApplicationMenu(g.menuHost.menus.index)
 
+    g.statusHost.electronReady.do(
+        (sender, launchInfo) => {
+            if (g.option.useDevServer) {
+                const react_dev_tool_path = path.join(os.homedir(), "AppData/Local", "Google/Chrome/User Data/Profile 1/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.4.0_0")
+                BrowserWindow.addDevToolsExtension(react_dev_tool_path)
+            }
+            g.sessionCenter.createSession(g.commands, g.option, g.info)
+        })
 
-    g.statusHost.electronReady.do((sender, launchInfo) => {
-        if (g.option.useDevServer) {
-            const react_dev_tool_path = path.join(os.homedir(), "AppData/Local", "Google/Chrome/User Data/Profile 1/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.4.0_0")
-            BrowserWindow.addDevToolsExtension(react_dev_tool_path)
-        }
-        g.sessionCenter.createSession(g.commands, g.option, g.info)
-    })
+    g.statusHost.electronActivate.do(
+        (sender, [event, hasVisibleWindows]) => {
+            g.sessionCenter.createSession(g.commands, g.option, g.info)
+        })
 
-    g.statusHost.electronActivate.do((sender, [event, hasVisibleWindows]) => {
-        g.sessionCenter.createSession(g.commands, g.option, g.info)
-    })
+    g.statusHost.electronWindowAllClosed.do(
+        (sender) => {
+            app.quit()
+        })
 
-    g.statusHost.electronWindowAllClosed.do((sender) => {
-        app.quit()
-    })
+    g.statusHost.sessionReady.doOnce(
+        (sender) => {
+            const paths = g.option.audioFiles
+            if (paths && paths.length > 0) {
+                g.commands.openAudioByPaths({ paths: paths, sess: null })
+            }
+            /*g.commands.openAudioByPaths({
+                paths:[
+                    "D:\\D.flac",
+                    "D:\\audio.flac",
+                ], sess:null})*/
+        })
 
-    g.statusHost.sessionReady.doOnce((sender) => {
-        const paths = g.option.audioFiles
-        if (paths && paths.length > 0) {
-            g.commands.openAudioByPaths({ paths: paths, sess: null })
-        }
-    })
-
-    g.statusHost.electronSecondInstance.do((sender, [event, argv, workingDirectory]) => {
-        if(app.isPackaged){
-            argv.splice(0, 3)
-        }else{
-            argv.splice(0,4)
-        }
-        const option = commandLineArgs(optionDefinitions, { argv: argv }) as Option
-        const paths = option.audioFiles
-        if (paths && paths.length > 0) {
-            g.commands.openAudioByPaths({ paths: paths, sess: null })
-        }
-    })
+    g.statusHost.electronSecondInstance.do(
+        (sender, [event, argv, workingDirectory]) => {
+            if (app.isPackaged) {
+                argv.splice(0, 3)
+            }
+            else {
+                argv.splice(0, 4)
+            }
+            const option = commandLineArgs(optionDefinitions, { argv: argv }) as Option
+            const paths = option.audioFiles
+            if (paths && paths.length > 0) {
+                g.commands.openAudioByPaths({ paths: paths, sess: null })
+            }
+        })
 }
-
 
 console.log("main.ts completed")

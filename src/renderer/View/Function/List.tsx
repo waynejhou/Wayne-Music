@@ -7,6 +7,7 @@ import { HawkrivesList } from '../../AppView';
 import { Audio } from '../../AppAudio'
 import { OverflowYProperty } from 'csstype'
 import { includes, values, range, reject, uniq } from 'lodash';
+import * as Icon from '../Icon/Icons'
 import cx from 'classnames'
 
 export class ListProps {
@@ -37,7 +38,7 @@ export const List: React.FC<ListProps> = (props) => {
                     onChange={(selected) => {
                         if (selected.length > 0) setSelectedPic(list[selected[0]].picture)
                     }}
-                    onItemDoubleClick={(selected)=>{
+                    onItemDoubleClick={(selected) => {
                         console.log(selected)
                         if (selected.length > 0) window["audioVM"].current = list[selected[0]]
                     }}
@@ -250,14 +251,18 @@ export const HawkrivesAudioList: React.FC<HawkrivesAudioListPorps> = (props) => 
                     'is-selected': selected,
                     'is-focused': focused,
                 }, props.className)
+                const playing = window['audioVM'].current.url == itemContent.url
                 return (
                     <div key={cx('react-audio-list-select--item', index)}
                         className={classes}
                         onMouseOver={(ev) => { focusIndex(index) }}
                         onClick={(ev) => { toggleMouseSelect({ event: ev, index: index }) }}
-                        onDoubleClick={(ev) => { if(props.onItemDoubleClick) props.onItemDoubleClick(selectedItems) }}
+                        onDoubleClick={(ev) => { if (props.onItemDoubleClick) props.onItemDoubleClick(selectedItems) }}
                     >
                         <span className="react-audio-list-select--item-property list">{index + 1}.</span>
+                        <span className="react-audio-list-select--item-property list" style={{width:"25px"}}>
+                            {playing && <Icon.Playing></Icon.Playing>}
+                        </span>
                         <span className="react-audio-list-select--item-property list">{itemContent.title}</span>
                         <span className="react-audio-list-select--item-property list">{itemContent.album}</span>
                         <span className="react-audio-list-select--item-property list">{((v) => {

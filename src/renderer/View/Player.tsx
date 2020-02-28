@@ -6,6 +6,8 @@ import * as AppAudio from '../AppAudio';
 import { AudioViewModel } from '../AppViewModel';
 import { BaseViewModel } from '../ViewModel/BaseViewModel';
 import { useBind } from '../Utils/ReactBindHook';
+import * as Icon from './Icon/Icons'
+import { EPlayback, ERepeat, ERandom } from '../../shared/Audio';
 export class PlayerProps {
     dataContext: BaseViewModel
 }
@@ -113,19 +115,40 @@ export const Player: React.FC<PlayerProps> = (props) => {
             <div id="control" className="player container">
                 <div id="btns" className="player">
                     <button className="player button" onClick={() => { audioVM.ctrlPlayPause() }}>
-                        <i className="material-icons">{useBind<string>("playback", dataContext)}</i>
+                        {useBind<EPlayback>("playback", dataContext) == EPlayback.playing &&
+                            <Icon.Pause className="button-icon player"></Icon.Pause>
+                        }
+                        {useBind<EPlayback>("playback", dataContext) == EPlayback.paused &&
+                            <Icon.Playing className="button-icon player"></Icon.Playing>
+                        }
+                        {useBind<EPlayback>("playback", dataContext) == EPlayback.stopped &&
+                            <Icon.Playing className="button-icon player"></Icon.Playing>
+                        }
                     </button>
                     <button className="player button">
-                        <i className="material-icons">fast_rewind</i>
+                        <Icon.StepForward className="button-icon player"></Icon.StepForward>
                     </button>
                     <button className="player button">
-                        <i className="material-icons">fast_forward</i>
+                        <Icon.StepBackward className="button-icon player"></Icon.StepBackward>
                     </button>
-                    <button className="player button">
-                        <i className="material-icons">transform</i>
+                    <button className="player button" onClick={(ev)=>{audioVM.ctrlRandom()}}>
+                        {useBind<ERandom>("random", dataContext) == ERandom.on &&
+                            <Icon.Random className="button-icon player"></Icon.Random>
+                        }
+                        {useBind<ERandom>("random", dataContext) == ERandom.off &&
+                            <Icon.Random className="button-icon player" data-enable="false"></Icon.Random>
+                        }
                     </button>
-                    <button className="player button">
-                        <i className="material-icons">repeat</i>
+                    <button className="player button" onClick={(ev)=>{audioVM.ctrlRepeat()}}>
+                        {useBind<ERepeat>("repeat", dataContext) == ERepeat.off &&
+                            <Icon.RepeatOff className="button-icon player"></Icon.RepeatOff>
+                        }
+                        {useBind<ERepeat>("repeat", dataContext) == ERepeat.current &&
+                            <Icon.RepeatCurrent className="button-icon player"></Icon.RepeatCurrent>
+                        }
+                        {useBind<ERepeat>("repeat", dataContext) == ERepeat.list &&
+                            <Icon.RepeatList className="button-icon player"></Icon.RepeatList>
+                        }
                     </button>
                     <AppDom.Slider
                         displayTag={true}
