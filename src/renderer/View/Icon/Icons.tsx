@@ -6,8 +6,8 @@ export const Cover: React.FC<IconProps> = (props) => {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0,0,100,100" preserveAspectRatio="xMidYMid meet">
             <path d="m 10,10 h80 v80 h-80 v-80 z  m 10,10 v60 h60 v-60 h-60 z"></path>
-            <path fill-opacity="0.8" d="m 25,75 L 55,75 40,55"></path>
-            <path fill-opacity="0.7" d="m 40,70 L 75,70 57.5,45"></path>
+            <path fillOpacity="0.8" d="m 25,75 L 55,75 40,55"></path>
+            <path fillOpacity="0.7" d="m 40,70 L 75,70 57.5,45"></path>
         </svg>
     )
 }
@@ -15,14 +15,14 @@ export const Cover: React.FC<IconProps> = (props) => {
 export const WaveForm: React.FC<IconProps> = (props) => {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0,0,100,100" preserveAspectRatio="xMidYMid meet">
-            <rect fill-opacity="1"   x="10" y="20" width="10" height="70"></rect>
-            <rect fill-opacity="0.5" x="20" y="35" width="10" height="55"></rect>
-            <rect fill-opacity="1"   x="30" y="30" width="10" height="60"></rect>
-            <rect fill-opacity="0.5" x="40" y="50" width="10" height="40"></rect>
-            <rect fill-opacity="1"   x="50" y="40" width="10" height="50"></rect>
-            <rect fill-opacity="0.5" x="60" y="55" width="10" height="35"></rect>
-            <rect fill-opacity="1"   x="70" y="70" width="10" height="20"></rect>
-            <rect fill-opacity="0.5" x="80" y="85" width="10" height="5"></rect>
+            <rect fillOpacity="1" x="10" y="20" width="10" height="70"></rect>
+            <rect fillOpacity="0.5" x="20" y="35" width="10" height="55"></rect>
+            <rect fillOpacity="1" x="30" y="30" width="10" height="60"></rect>
+            <rect fillOpacity="0.5" x="40" y="50" width="10" height="40"></rect>
+            <rect fillOpacity="1" x="50" y="40" width="10" height="50"></rect>
+            <rect fillOpacity="0.5" x="60" y="55" width="10" height="35"></rect>
+            <rect fillOpacity="1" x="70" y="70" width="10" height="20"></rect>
+            <rect fillOpacity="0.5" x="80" y="85" width="10" height="5"></rect>
         </svg>
     )
 }
@@ -30,12 +30,12 @@ export const WaveForm: React.FC<IconProps> = (props) => {
 export const List: React.FC<IconProps> = (props) => {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0,0,100,100" preserveAspectRatio="xMidYMid meet">
-            <rect  x="10" y="10" width="15" height="15"></rect>
-            <rect  x="45" y="10" width="45" height="15"></rect>
-            <rect  x="10" y="40" width="15" height="15"></rect>
-            <rect  x="45" y="40" width="45" height="15"></rect>
-            <rect  x="10" y="70" width="15" height="15"></rect>
-            <rect  x="45" y="70" width="45" height="15"></rect>
+            <rect x="10" y="10" width="15" height="15"></rect>
+            <rect x="45" y="10" width="45" height="15"></rect>
+            <rect x="10" y="40" width="15" height="15"></rect>
+            <rect x="45" y="40" width="45" height="15"></rect>
+            <rect x="10" y="70" width="15" height="15"></rect>
+            <rect x="45" y="70" width="45" height="15"></rect>
         </svg>
     )
 }
@@ -43,10 +43,10 @@ export const List: React.FC<IconProps> = (props) => {
 export const Lyric: React.FC<IconProps> = (props) => {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0,0,100,100" preserveAspectRatio="xMidYMid meet">
-            <rect fill-opacity="0.5" x="10" y="10" width="35" height="15"></rect>
-            <rect fill-opacity="1" x="10" y="30" width="55" height="15"></rect>
-            <rect fill-opacity="0.5" x="10" y="50" width="75" height="15"></rect>
-            <rect fill-opacity="0.5" x="10" y="70" width="95" height="15"></rect>
+            <rect fillOpacity="0.5" x="10" y="10" width="35" height="15"></rect>
+            <rect fillOpacity="1" x="10" y="30" width="55" height="15"></rect>
+            <rect fillOpacity="0.5" x="10" y="50" width="75" height="15"></rect>
+            <rect fillOpacity="0.5" x="10" y="70" width="95" height="15"></rect>
         </svg>
     )
 }

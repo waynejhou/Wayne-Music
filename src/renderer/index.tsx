@@ -1,35 +1,15 @@
+import { ExWindow, GetParameters } from './ExWindow';
 import ReactDOM from 'react-dom';
-import React from 'react';
-import { RendererRouter } from './Utils/RendererRouter';
-import { Message, Command } from '../shared/AppIpcMessage'
-import * as AppIpc from './AppIpc'
-import { App } from './AppView';
-import './index.css'
-import './index.theme.css'
-import { AudioModel } from './AppAudio';
+import React, { CSSProperties } from 'react';
+import styled from 'styled-components';
+import { RendererRouter } from './Utils';
+import { AudioViewModel, LyricViewModel, ToastViewModel, ListViewModel } from './ViewModel';
 import { ipcRenderer } from 'electron';
-import { AudioViewModel, LyricViewModel, ToastViewModel, ListViewModel } from './AppViewModel';
-import { Audio } from '../shared/Audio';
+import { Message, Command } from '../shared/AppIpc';
+import { AudioModel } from './Model';
+import { App, Theme } from './View';
 
-class GetParameters {
-    public name: string;
-    public constructor(getString: string) {
-        const parameters = new URLSearchParams(location.search)
-        this.name = parameters.get('name');
-    }
-}
-
-type ExWindow = Window & typeof globalThis & {
-    get: GetParameters
-    router: RendererRouter
-    audio: AudioModel
-    audioVM: AudioViewModel
-    lyricVM: LyricViewModel
-    toastVM: ToastViewModel
-    listVM: ListViewModel
-}
 const w = (window as ExWindow)
-
 
 w.get = new GetParameters(location.search)
 w.router = new RendererRouter(w.get.name, ipcRenderer)
@@ -42,9 +22,11 @@ w.addEventListener('focus', (ev) => {
         )))
 });
 
+const audioModel = new AudioModel()
 
-w.audio = new AudioModel()
-w.audioVM = new AudioViewModel(w.router, w.audio)
+w.theme = new Theme()
+
+w.audioVM = new AudioViewModel(w.router, audioModel)
 w.router.registerHost(w.audioVM.mailBox)
 
 w.lyricVM = new LyricViewModel()
@@ -53,8 +35,9 @@ w.router.registerHost(w.lyricVM.mailBox)
 w.toastVM = new ToastViewModel()
 w.router.registerHost(w.toastVM.mailBox)
 
-w.listVM = new ListViewModel()
+w.listVM = new ListViewModel(audioModel)
 w.router.registerHost(w.listVM.mailBox)
+
 
 let onceRenderComplete = () => {
     RendererRouter.send2main(new Message('renderer', 'statusHost',
@@ -62,6 +45,8 @@ let onceRenderComplete = () => {
             'invoke', "sessionReady"
         )))
 }
+
+
 
 function render() {
     ReactDOM.render(
@@ -75,4 +60,3 @@ function render() {
     );
 }
 render()
-

@@ -1,15 +1,14 @@
-import { AudioModel, Audio, EPlayback, ERandom, ERepeat } from '../AppAudio'
-import { BaseViewModel } from './BaseViewModel'
-import { IHost, HostMailbox } from '../AppHost'
-import * as ArrayEx from '../Utils/ArrayEx'
-import { RendererRouter } from '../Utils/RendererRouter'
-import { Message, Command } from '../../shared/AppIpcMessage'
-import { ToastViewModel } from './ToastViewModel'
-import { Toast } from '../../shared/Toast'
+import { BaseViewModel } from '.'
+import { IHost, HostMailbox, Message, Command  } from '../../shared/AppIpc'
+import { Audio, EPlayback } from '../../shared/Audio'
+import { RendererRouter } from '../Utils'
+import { AudioModel } from '../Model'
+import { IEventHandler, EventHandler } from '../../shared/EventHandler'
 
 export class AudioViewModel extends BaseViewModel implements IHost {
     mailBox: HostMailbox
     private audio: AudioModel
+    public onAudioLoaded: IEventHandler<Audio>
     public constructor(route: RendererRouter, audio: AudioModel) {
         super()
         this.audio = audio
@@ -17,6 +16,9 @@ export class AudioViewModel extends BaseViewModel implements IHost {
             route.send(new Message("audio", "statusHost", new Command(
                 "invoke", "audioLoaded", this.audio.current
             )))
+            if(this.onAudioLoaded.invokable){
+                this.onAudioLoaded.invoke(this, ev.current)
+            }
             this.notifyPropChange("title");
             this.notifyPropChange("album");
             this.notifyPropChange("playback");
@@ -41,7 +43,7 @@ export class AudioViewModel extends BaseViewModel implements IHost {
         this.mailBox.commandGot.do((sender, cmd) => {
             switch (cmd.action) {
                 case 'update':
-                    this.audio[cmd.request] = cmd.data
+                    this[cmd.request] = cmd.data
                     break;
                 default:
                     console.log(`Unrecognized Action [${cmd.action}]`)
@@ -50,6 +52,7 @@ export class AudioViewModel extends BaseViewModel implements IHost {
         })
         this.timeDomainDataHistory = new Array()
         this.frequencyDataHistory = new Array()
+        this.onAudioLoaded = new EventHandler<Audio>()
     }
 
     private timeDomainDataHistory: Array<Float32Array>
@@ -70,6 +73,11 @@ export class AudioViewModel extends BaseViewModel implements IHost {
         this.audio.current = value;
     }
 
+    public setCurrentAndPlay(value) {
+        this.audio.current = value;
+        this.audio.audioLoaded.doOnce(()=>this.playback = EPlayback.playing)
+    }
+
     public get duration() {
         return this.audio.duration;
     }
@@ -83,23 +91,28 @@ export class AudioViewModel extends BaseViewModel implements IHost {
     public get album() {
         if (this.audio.current.album)
             return this.audio.current.album
-        return "Unknow aAbum"
+        return "Unknow Album"
     }
 
     public get playback() {
         return this.audio.playback
     }
-    public ctrlPlayPause() {
-        if (this.audio.playback == EPlayback.paused) {
-            this.audio.playback = EPlayback.playing
-        }
-        else if (this.audio.playback == EPlayback.stopped) {
-            this.audio.playback = EPlayback.playing
-        }
-        else if (this.audio.playback == EPlayback.playing) {
-            this.audio.playback = EPlayback.paused
-        }
+    public set playback(value) {
+        this.audio.playback = value
+        console.log(["asd", value, this.audio.playback])
         this.notifyPropChange("playback")
+    }
+    public ctrlPlayPause() {
+        if (this.playback == EPlayback.paused) {
+            this.playback = EPlayback.playing
+        }
+        else if (this.playback == EPlayback.stopped) {
+            this.playback = EPlayback.playing
+        }
+        else if (this.playback == EPlayback.playing) {
+            this.playback = EPlayback.paused
+        }
+        
     }
 
     public get volume() {
@@ -128,36 +141,5 @@ export class AudioViewModel extends BaseViewModel implements IHost {
         return this.audio.current.picture
     }
 
-    public get repeat() {
-        return this.audio.repeat
-    }
-    public ctrlRepeat() {
-        this.audio.repeat = (this.audio.repeat + 1) % 3
-        this.notifyPropChange("repeat");
-        switch (this.repeat) {
-            case ERepeat.off:
-                window["toastVM"].dropToast(
-                    new Toast(0, 1000, `Repeat Off`))
-                break;
-            case ERepeat.current:
-                window["toastVM"].dropToast(
-                    new Toast(0, 1000, `Repeat Current Playing`))
-                break;
-            case ERepeat.list:
-                window["toastVM"].dropToast(
-                    new Toast(0, 1000, `Repeat List`))
-                break;
-        }
 
-    }
-
-    public get random() {
-        return this.audio.random
-    }
-    public ctrlRandom() {
-        this.audio.random = (this.audio.random + 1) % 2
-        this.notifyPropChange("random");
-        window["toastVM"].dropToast(
-            new Toast(0, 1000, `Random ${this.random == 0 ? "off" : "on"}`))
-    }
 }

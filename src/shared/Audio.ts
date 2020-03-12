@@ -9,13 +9,13 @@ export class Audio {
     public constructor(nativePath: string, metadata?: IAudioMetadata, picture?: string) {
         if (nativePath) {
             this.path = nativePath
-            if(this.path.startsWith("\\\\")){
-                this.url = `file:${this.path.replace(/\\/gm,"/",)}`
-            }else{
+            if (this.path.startsWith("\\\\")) {
+                this.url = `file:${this.path.replace(/\\/gm, "/")}`
+            } else {
                 this.url = pathToFileURL(nativePath).href
             }
-            
-            
+
+
         }
         if (metadata) {
             this.album = metadata.common.album
@@ -65,14 +65,28 @@ export class Audio {
     public toString(): string {
         return `Audio[Url: ${this.url}]`;
     }
-    public static EMPTY:Audio = null
+    public static readonly default: Audio = Object.seal({
+        album: null,
+        albumartist: null,
+        artist: null,
+        comment: null,
+        date: null,
+        disk: null,
+        duration: null,
+        genre: null,
+        path: null,
+        picture: null,
+        title: null,
+        track: null,
+        url: null,
+        year: null,
+    })
 }
-Audio.EMPTY = Object.seal(new Audio(null, null, null))
 
 export enum EPlayback {
+    stopped,
     playing,
     paused,
-    stopped,
 }
 
 export enum ERepeat {
@@ -86,6 +100,6 @@ export enum ERandom {
     on
 }
 
-export enum EAudioModelState{
+export enum EAudioModelState {
     idle, loading
 }

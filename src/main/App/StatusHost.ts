@@ -1,13 +1,13 @@
 import { App } from "electron";
-import * as AppHost from '../AppHost'
+import { HostMailbox, IHost } from '../../shared/AppIpc'
 import { IEventHandler, EventEmitter2HandlerWrapper, EventHandler } from "../../shared/EventHandler";
 
-export class StatusHost implements AppHost.IHost {
+export class StatusHost implements IHost {
     private app: App;
-    public mailBox: AppHost.HostMailbox
+    public mailBox: HostMailbox
     public constructor(app: App) {
         this.app = app
-        this.mailBox = new AppHost.HostMailbox("statusHost")
+        this.mailBox = new HostMailbox("statusHost")
         this.mailBox.commandGot.do((sender, cmd) => {
             if (cmd.action == "invoke") {
                 const t = this as this & { [key: string]: IEventHandler<any> }

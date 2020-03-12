@@ -1,5 +1,5 @@
 export class Toast {
-    public id: number
+    public id: string
     public duration: number
     public message: string
     public delay: number

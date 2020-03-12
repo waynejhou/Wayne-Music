@@ -1,4 +1,4 @@
-import { IEventHandler } from "./EventHandler";
+import { IEventHandler } from "../../shared/EventHandler";
 
 export class PropertyChangedEventArgs {
     public propName: string;

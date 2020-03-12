@@ -1,36 +1,101 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import './List.css'
-import { useBind } from '../../Utils/ReactBindHook';
-import { LyricDiv, LyricSpan } from '../../ViewModel/LyricViewModel';
-import { HawkrivesList } from '../../AppView';
-import { Audio } from '../../AppAudio'
+//import './List.css'
+import { useBind } from '../../ViewModel';
+import {Audio, EPlayback} from "../../../shared/Audio"
 import { OverflowYProperty } from 'csstype'
 import { includes, values, range, reject, uniq } from 'lodash';
 import * as Icon from '../Icon/Icons'
 import cx from 'classnames'
+import styled from 'styled-components';
+import {Theme} from '..'
+import { Container } from '../Theme';
+import { ExWindow } from '../../ExWindow';
+const w = window as ExWindow
+const Root = styled(Container)`
+display: grid;
+grid-column: 1;
+grid-row: 1;
+position: relative;
+`
+
+const Wrapper = styled.div`
+grid-column: 1;
+grid-row: 1;
+z-index: 1;
+position: absolute;
+height: -webkit-fill-available;
+width: -webkit-fill-available;
+overflow-y: auto;
+`
+
+const Cover = styled.img`
+grid-row: 1;
+grid-column: 1;
+z-index: 0;
+max-width: 350px;
+margin-left: auto;
+margin-top: auto;
+opacity: 0.5;
+background-color: ${Theme.var("--main-layer-color")};
+outline: thick solid ${Theme.var("--main-layer-color-more")};
+`
+
+const AudioItem = styled.div`
+display: grid;
+max-width: 100%;
+padding-top: 5px;
+padding-bottom: 5px;
+padding-left: 10px;
+margin-right: 10px;
+padding-right: 10px;
+font-size: 1.5rem;
+white-space: nowrap;
+grid-template-columns: min-content fit-content(25px) 1fr 1fr fit-content(100px);
+grid-template-rows: 1fr;
+border-top: 0px;
+border-left: 0px;
+border-bottom: 1px;
+border-right: 0px;
+border-color: ${Theme.var("--main-layer-color")};
+border-style: solid;
+&:nth-child(odd){
+    background-color: ${Theme.var("--main-layer-color")};
+}
+&.is-focused{
+    background-color: ${Theme.var("--main-layer-color--hover")};
+}
+&.is-selected{
+    background-color: ${Theme.var("--main-active-color")};
+}
+&.is-selected.is-focused{
+    background-color: ${Theme.var("--main-active-color--hover")};
+}
+`
+
+const AudioProperty = styled.span`
+padding-right: 5px;
+padding-left: 5px;
+overflow: hidden;
+text-overflow: ellipsis;
+margin-top: auto;
+margin-bottom: auto;
+`
 
 export class ListProps {
 }
 
 export const List: React.FC<ListProps> = (props) => {
-    const list = useBind<Audio[]>("current", window["listVM"])
-    const picture = useBind<string>("picture", window["audioVM"])
-    const rootRef = useRef(null as HTMLDivElement)
-    const wrapperRef = useRef(null as HTMLDivElement)
+    const list = useBind<Audio[]>("current", w.listVM)
+    const picture = useBind<string>("picture", w.audioVM)
     const selectRef = useRef([] as number[])
-    const [isNeedScroll, setIsNeedScroll] = useState("none" as OverflowYProperty)
     const [selectedPic, setSelectedPic] = useState(null)
     const lastSelectedIdx = useRef(-1)
-    useEffect(() => {
-        setIsNeedScroll((rootRef.current.clientHeight >= wrapperRef.current.clientHeight ? "none" : "scroll") as OverflowYProperty)
-    })
     return (
-        <div className="root list" ref={rootRef}>
-            <img src={selectedPic ? selectedPic : (picture ? picture : "img/Ellipses.png")} className="list cover"></img>
-            <div className="wrapper list" ref={wrapperRef} style={{ overflowY: isNeedScroll }}>
+        <Root className="root">
+            <Cover src={selectedPic ? selectedPic : (picture ? picture : "img/Ellipses.png")}></Cover>
+            <Wrapper className="wrapper">
                 <HawkrivesAudioList
-                    className="audio-list list"
                     keyboardEvents={true}
                     items={list}
                     selected={selectRef.current}
@@ -40,13 +105,15 @@ export const List: React.FC<ListProps> = (props) => {
                     }}
                     onItemDoubleClick={(selected) => {
                         console.log(selected)
-                        if (selected.length > 0) window["audioVM"].current = list[selected[0]]
+                        if (selected.length > 0){
+                            w.audioVM.setCurrentAndPlay(list[selected[0]])
+                        }
                     }}
                 >
                 </HawkrivesAudioList>
-            </div>
+            </Wrapper>
 
-        </div>
+        </Root>
 
     )
 }
@@ -239,38 +306,35 @@ export const HawkrivesAudioList: React.FC<HawkrivesAudioListPorps> = (props) => 
     //#endregion
 
     return (
-        <div
-            className={cx('react-audio-list-select', props.className)}
-            onKeyDown={props.keyboardEvents ? onKeyDown : undefined}
-            onMouseLeave={(ev) => { clearFocus() }}
-        >
+        <div className="dsa" onKeyDown={props.keyboardEvents ? onKeyDown : undefined}
+            onMouseLeave={(ev) => { clearFocus() }}>
             {items.map((itemContent, index) => {
                 const selected = includes(selectedItems, index)
                 const focused = focusedIndex === index
-                const classes = cx('react-audio-list-select--item', {
+                const classes = cx({
                     'is-selected': selected,
                     'is-focused': focused,
                 }, props.className)
                 const playing = window['audioVM'].current.url == itemContent.url
                 return (
-                    <div key={cx('react-audio-list-select--item', index)}
+                    <AudioItem key={index}
                         className={classes}
                         onMouseOver={(ev) => { focusIndex(index) }}
                         onClick={(ev) => { toggleMouseSelect({ event: ev, index: index }) }}
                         onDoubleClick={(ev) => { if (props.onItemDoubleClick) props.onItemDoubleClick(selectedItems) }}
                     >
-                        <span className="react-audio-list-select--item-property list">{index + 1}.</span>
-                        <span className="react-audio-list-select--item-property list" style={{width:"25px"}}>
-                            {playing && <Icon.Playing></Icon.Playing>}
-                        </span>
-                        <span className="react-audio-list-select--item-property list">{itemContent.title}</span>
-                        <span className="react-audio-list-select--item-property list">{itemContent.album}</span>
-                        <span className="react-audio-list-select--item-property list">{((v) => {
+                        <AudioProperty>{index + 1}.</AudioProperty>
+                        <AudioProperty style={{width:"25px"}}>
+                            {playing && <Icon.Playing style={{fill: Theme.var("--main-fg-color")}}></Icon.Playing>}
+                        </AudioProperty>
+                        <AudioProperty>{itemContent.title}</AudioProperty>
+                        <AudioProperty>{itemContent.album}</AudioProperty>
+                        <AudioProperty>{((v) => {
                             let min = ("" + Math.floor(v / 60)).padStart(2, "0")
                             let sec = ("" + Math.floor(v % 60)).padStart(2, "0")
                             return `${min}:${sec}`
-                        })(itemContent.duration)}</span>
-                    </div>
+                        })(itemContent.duration)}</AudioProperty>
+                    </AudioItem>
                 )
             })}
         </div >

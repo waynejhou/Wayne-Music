@@ -1,5 +1,5 @@
 import { BaseViewModel } from './BaseViewModel'
-import { IHost, HostMailbox } from '../AppHost'
+import { IHost, HostMailbox } from '../../shared/AppIpc'
 import { FontWeightProperty } from 'csstype'
 
 const tagRegExp = /([^\]\[]+)?(?:(\[)(\/?)([^\\\/\:\]\[]*)(?:(\:)([^:\.\]\[]*))?(\]))?/gm;

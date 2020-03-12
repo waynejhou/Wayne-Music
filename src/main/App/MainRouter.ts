@@ -1,8 +1,6 @@
 import { BrowserWindow, IpcMain, IpcMainEvent, App } from "electron";
-import { HostMailbox } from "../AppHost";
-import { Message } from "../AppIpc";
-import { ReturnableMessage, Command, ReturnableCommand } from "../../shared/AppIpcMessage";
-import { Commands } from "./Commands";
+import { HostMailbox, Message } from "../../shared/AppIpc";
+import { Command, ReturnableCommand } from "../../shared/AppIpc/Message";
 
 export type ActionCallback = (req: string, data: any) => void;
 
@@ -44,7 +42,7 @@ export class MainRouter {
                 return
             }
             const ret = msg.commands.map(cmd => {
-                const retCmd = new ReturnableCommand(cmd)
+                const retCmd = cmd as ReturnableCommand
                 if (this.hostMailBoxs[msg.receiverHost].commandGotSync.invokable)
                     this.hostMailBoxs[msg.receiverHost].commandGotSync.invoke(this, retCmd)
                 return new Command("sync", "return", retCmd.return)

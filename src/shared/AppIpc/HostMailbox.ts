@@ -1,5 +1,5 @@
-import { Message, Command, ReturnableMessage, ReturnableCommand } from "./AppIpcMessage";
-import { EventHandler, IEventHandler } from "./EventHandler";
+import { Message, Command, ReturnableMessage, ReturnableCommand } from "./Message";
+import { EventHandler, IEventHandler } from "../EventHandler";
 
 export class HostMailbox {
     public hostName: string;

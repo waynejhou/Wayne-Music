@@ -1,182 +1,176 @@
-import React, { useState, useCallback, useEffect, useRef, ReactHTMLElement } from 'react';
+import React, { useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import './Player.css'
-import * as AppDom from '../AppView';
-import * as AppAudio from '../AppAudio';
-import { AudioViewModel } from '../AppViewModel';
-import { BaseViewModel } from '../ViewModel/BaseViewModel';
-import { useBind } from '../Utils/ReactBindHook';
-import * as Icon from './Icon/Icons'
-import { EPlayback, ERepeat, ERandom } from '../../shared/Audio';
-export class PlayerProps {
-    dataContext: BaseViewModel
-}
-export const Player: React.FC<PlayerProps> = (props) => {
-    const { dataContext } = props
-    const audioVM = dataContext as AudioViewModel
-    const title = useBind<string>("title", dataContext)
+import { AudioViewModel, ListViewModel, useBind } from '../ViewModel';
+import { EPlayback, ERandom, ERepeat } from '../../shared/Audio';
+import * as Icon from "./Icon/Icons"
+import { Slider } from '.';
+import styled, { keyframes } from 'styled-components';
+import { Container, Theme } from './Theme';
+import { useDomAttr } from '../Utils/ReactHook';
+import { ScrollingText } from './Util/ScrollingText';
+import { ExWindow } from '../ExWindow';
 
-    const titleRef = useRef(null as HTMLDivElement)
-    const albumRef = useRef(null as HTMLDivElement)
-    const metadatRef = useRef(null as HTMLDivElement)
-    const titleWidth = useRef(0)
-    const titleSpeed = useRef(0)
-    const titleShouldScroll = useRef(false)
-    const album = useBind<string>("album", dataContext)
-    const albumWidth = useRef(0)
-    const albumSpeed = useRef(0)
-    const albumShouldScroll = useRef(false)
-    useEffect(() => {
-        if (Math.abs(titleWidth.current - Math.floor(titleRef.current.clientWidth)) > 1)
-            titleWidth.current = Math.floor(titleRef.current.clientWidth)
-        titleSpeed.current = Math.floor(titleWidth.current * 0.03)
-        titleShouldScroll.current = metadatRef.current.clientWidth - titleRef.current.clientWidth < 0
-        if (Math.abs(albumWidth.current - Math.floor(albumRef.current.clientWidth)) > 1)
-            albumWidth.current = Math.floor(albumRef.current.clientWidth)
-        albumSpeed.current = Math.floor(albumWidth.current * 0.03)
-        albumShouldScroll.current = metadatRef.current.clientWidth - albumRef.current.clientWidth < 0
-    })
+export class PlayerProps {
+}
+
+const Root = styled(Container)`
+display: grid;
+grid-template-columns: 1fr 2fr;
+`
+
+const Metadata = styled.div`
+grid-column: 1;
+display: grid;
+`
+
+const Control = styled.div`
+grid-column: 2;
+display: grid;
+`
+
+const Buttons = styled.div`
+display: flex;
+flex-direction: row;
+`
+
+const Button = styled.button`
+background-color: ${Theme.var("--main-layer-color")};
+border: none;
+margin: 5px;
+border-radius: 5px;
+width: 50px;
+height: 50px;
+font-size: 3rem;
+display: grid;
+
+&:hover {
+    border: none;
+    background-color: ${Theme.var("--main-layer-color--hover")};
+}
+&:disabled {
+    background-color: ${Theme.var("--main-layer-color")};
+}
+&:disabled:active {
+    background-color: ${Theme.var("--main-layer-color")};
+}
+&:active {
+    background-color: ${Theme.var("--main-active-color")};
+}
+
+&:focus {
+    outline: none;
+    border: white;
+    border-width: 1px;
+    border-style: dashed;
+}
+
+& > .player.button-icon{
+    margin: auto;
+    fill: ${Theme.var("--main-fg-color")};
+}
+&:disabled > .player.button-icon{
+    fill: ${Theme.var("--main-layer-color")};
+}
+& > .player.button-icon[data-enable="false"]{
+    margin: auto;
+    fill: ${Theme.var("--main-layer-color-more")}
+}
+`
+
+const Title = styled(ScrollingText)`
+    font-size: 3rem;
+`
+const Album = styled(ScrollingText)`
+    font-size: 2rem;
+`
+
+export const Player: React.FC<PlayerProps> = (props) => {
+    const w = window as ExWindow
+    const titleText = useBind<string>("title", w.audioVM)
+    const albumText = useBind<string>("album", w.audioVM)
+    const playback = useBind<EPlayback>("playback", w.audioVM)
+    const random = useBind<ERandom>("random", w.listVM)
+    const repeat = useBind<ERepeat>("repeat", w.listVM)
     return (
-        <div id="root" className="player container" >
-            <div id="metadata" className="player" ref={metadatRef}>
-                <div className="player metadata title">
-                    <style>
-                        {`@keyframes title-movingKeyframe1{
-                            0% {
-                                left: 0px
-                            }
-                            10% {
-                                left: 0px
-                            }
-                            100% {
-                                left: -${titleWidth.current}px;
-                            }
-                        }
-                        @keyframes title-movingKeyframe2{
-                            0% {
-                                left: ${titleWidth.current}px;
-                            }
-                            10% {
-                                left: ${titleWidth.current}px;
-                            }
-                            100% {
-                                left: 0px
-                            }
-                        }`}
-                    </style>
-                    <div className="title-moving1 player metadata" ref={titleRef} style={{
-                        animation: titleShouldScroll.current ? `title-movingKeyframe1 ${titleSpeed.current}s linear infinite` : "none"
-                    }}>
-                        {title}
-                    </div>
-                    <div className="title-moving2 player metadata" style={{
-                        animation: titleShouldScroll.current ? `title-movingKeyframe2 ${titleSpeed.current}s linear infinite` : "none"
-                    }}>
-                        {title}
-                    </div>
-                </div>
-                <div className="player metadata album">
-                    <style>
-                        {`@keyframes album-movingKeyframe1{
-                            0% {
-                                left: 0px
-                            }
-                            10% {
-                                left: 0px
-                            }
-                            100% {
-                                left: -${albumWidth.current}px;
-                            }
-                        }
-                        @keyframes album-movingKeyframe2{
-                            0% {
-                                left: ${albumWidth.current}px;
-                            }
-                            10% {
-                                left: ${albumWidth.current}px;
-                            }
-                            100% {
-                                left: 0px
-                            }
-                        }`}
-                    </style>
-                    <div className="album-moving1 player metadata" ref={albumRef} style={{
-                        animation: albumShouldScroll.current ? `album-movingKeyframe1 ${albumSpeed.current}s linear infinite` : "none"
-                    }}>
-                        {album}
-                    </div>
-                    <div className="album-moving2 player metadata" style={{
-                        animation: albumShouldScroll.current ? `album-movingKeyframe2 ${albumSpeed.current}s linear infinite` : "none"
-                    }}>
-                        {album}
-                    </div>
-                </div>
-            </div>
-            <div id="control" className="player container">
-                <div id="btns" className="player">
-                    <button className="player button" onClick={() => { audioVM.ctrlPlayPause() }}>
-                        {useBind<EPlayback>("playback", dataContext) == EPlayback.playing &&
+        <Root>
+            <Metadata>
+                <Title>
+                    {titleText}
+                </Title>
+                <Album >
+                    {albumText}
+                </Album>
+            </Metadata>
+            <Control>
+                <Buttons>
+                    <Button onClick={() => { w.audioVM.ctrlPlayPause() }}>
+                        {playback == EPlayback.playing &&
                             <Icon.Pause className="button-icon player"></Icon.Pause>
                         }
-                        {useBind<EPlayback>("playback", dataContext) == EPlayback.paused &&
+                        {playback == EPlayback.paused &&
                             <Icon.Playing className="button-icon player"></Icon.Playing>
                         }
-                        {useBind<EPlayback>("playback", dataContext) == EPlayback.stopped &&
+                        {playback == EPlayback.stopped &&
                             <Icon.Playing className="button-icon player"></Icon.Playing>
                         }
-                    </button>
-                    <button className="player button">
+                    </Button>
+                    <Button disabled={!useBind("canGetLast", w.listVM)} onClick={(ev) => { w.listVM.toLast() }}>
+                        <Icon.StepBackward className="button-icon player" ></Icon.StepBackward>
+                    </Button>
+                    <Button disabled={!useBind("canGetNext", w.listVM)} onClick={(ev) => { w.listVM.toNext() }}>
                         <Icon.StepForward className="button-icon player"></Icon.StepForward>
-                    </button>
-                    <button className="player button">
-                        <Icon.StepBackward className="button-icon player"></Icon.StepBackward>
-                    </button>
-                    <button className="player button" onClick={(ev)=>{audioVM.ctrlRandom()}}>
-                        {useBind<ERandom>("random", dataContext) == ERandom.on &&
+                    </Button>
+                    <Button onClick={(ev) => { w.listVM.ctrlRandom() }}>
+                        {random == ERandom.on &&
                             <Icon.Random className="button-icon player"></Icon.Random>
                         }
-                        {useBind<ERandom>("random", dataContext) == ERandom.off &&
+                        {random == ERandom.off &&
                             <Icon.Random className="button-icon player" data-enable="false"></Icon.Random>
                         }
-                    </button>
-                    <button className="player button" onClick={(ev)=>{audioVM.ctrlRepeat()}}>
-                        {useBind<ERepeat>("repeat", dataContext) == ERepeat.off &&
+                    </Button>
+                    <Button onClick={(ev) => { w.listVM.ctrlRepeat() }}>
+                        {repeat == ERepeat.off &&
                             <Icon.RepeatOff className="button-icon player"></Icon.RepeatOff>
                         }
-                        {useBind<ERepeat>("repeat", dataContext) == ERepeat.current &&
+                        {repeat == ERepeat.current &&
                             <Icon.RepeatCurrent className="button-icon player"></Icon.RepeatCurrent>
                         }
-                        {useBind<ERepeat>("repeat", dataContext) == ERepeat.list &&
+                        {repeat == ERepeat.list &&
                             <Icon.RepeatList className="button-icon player"></Icon.RepeatList>
                         }
-                    </button>
-                    <AppDom.Slider
-                        displayTag={true}
-                        min={0}
-                        max={1}
-                        value={useBind<number>("volume", dataContext)}
-                        step={0.01}
-                        popup_hint_offsetX="-10px"
-                        valueToString={(v) => `${Math.floor(v * 100)}%`}
-                        onChanged={(ev) => audioVM.volume = ev.currentTarget.valueAsNumber}
-                        onWheel={(ev) => audioVM.volume = ev.currentTarget.valueAsNumber}
-                    ></AppDom.Slider>
-                </div>
-                <AppDom.Slider
+                    </Button>
+
+                    {
+                        <Slider
+                            displayTag={true}
+                            min={0}
+                            max={1}
+                            value={useBind<number>("volume", w.audioVM)}
+                            step={0.01}
+                            popupY="-10px"
+                            valueToString={(v) => `${Math.floor(v * 100)}%`}
+                            onChanged={(ev) => w.audioVM.volume = ev.currentTarget.valueAsNumber}
+                            onWheel={(ev) => w.audioVM.volume = ev.currentTarget.valueAsNumber}
+                        ></Slider>}
+
+                </Buttons>
+
+                <Slider
                     displayTag={true}
                     min={0}
-                    max={useBind<number>("duration", dataContext)}
-                    value={useBind<number>("seek", dataContext)}
+                    max={useBind<number>("duration", w.audioVM)}
+                    value={useBind<number>("seek", w.audioVM)}
                     step={0.05}
-                    popup_hint_offsetX="-30px"
+                    popupY="-30px"
                     valueToString={(v) => {
                         let min = ("" + Math.floor(v / 60)).padStart(2, "0")
                         let sec = ("" + Math.floor(v % 60)).padStart(2, "0")
                         return `${min}:${sec}`
                     }}
-                    onMouseUp={(ev) => { audioVM.seek = ev.currentTarget.valueAsNumber }}
-                ></AppDom.Slider>
-            </div>
-        </div>
+                    onMouseUp={(ev) => { w.audioVM.seek = ev.currentTarget.valueAsNumber }}
+                ></Slider>
+            </Control>
+        </Root>
     )
 }
+

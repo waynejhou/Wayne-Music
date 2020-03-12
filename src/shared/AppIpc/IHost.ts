@@ -1,4 +1,4 @@
-import * as AppIpc from "./AppIpcMessage";
+import * as AppIpc from "./Message";
 import { HostMailbox } from "./HostMailbox";
 
 /*

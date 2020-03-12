@@ -1,15 +1,15 @@
 import { Menu, MenuItemConstructorOptions } from "electron";
+import { IHost, HostMailbox } from "../../shared/AppIpc";
+import { SessionCenter } from "../AppSession";
+import { Info } from "./Info";
+import { Commands } from "./Commands";
 
-import * as App from "../App"
-import * as AppSess from "../AppSess"
-import * as AppHost from "../AppHost"
-import { Command } from "../AppIpc"
 
-export class MenuHost implements AppHost.IHost {
-    public mailBox: AppHost.HostMailbox;
+export class MenuHost implements IHost {
+    public mailBox: HostMailbox;
     public hostName: string = null;
 
-    private sessCenter: AppSess.SessionCenter
+    private sessCenter: SessionCenter
     private cmdArgs: any = null;
 
     public menuItems: { [name: string]: MenuItemConstructorOptions };
@@ -17,8 +17,8 @@ export class MenuHost implements AppHost.IHost {
 
     private macMenuHeader: MenuItemConstructorOptions[]
 
-    public constructor(info: App.Info, cmds: App.Commands, sessCenter: AppSess.SessionCenter) {
-        this.mailBox = new AppHost.HostMailbox("menuHost")
+    public constructor(info: Info, cmds: Commands, sessCenter: SessionCenter) {
+        this.mailBox = new HostMailbox("menuHost")
         this.mailBox.commandGot.do((cmd) => {
             if (cmd.action == 'popup') {
                 this.cmdArgs = { sess: this.sessCenter.get(cmd.data.sessionName) }
@@ -37,6 +37,10 @@ export class MenuHost implements AppHost.IHost {
                 label: "&Open Audio",
                 click: () => { cmds.openAudio(this.cmdArgs) }
             },
+            hideWindow:{
+                label: "&Hide Window",
+                click: () => { this.sessCenter.lastFocusSess.rendererWindow.hide() }
+            }
 
         }
         this.menus = {
@@ -47,7 +51,8 @@ export class MenuHost implements AppHost.IHost {
                         label: '&File',
                         submenu: [
                             menuItems.openAudio,
-                            menuItems.close_Or_quit
+                            menuItems.close_Or_quit,
+                            menuItems.hideWindow
                         ]
                     }
                 ]

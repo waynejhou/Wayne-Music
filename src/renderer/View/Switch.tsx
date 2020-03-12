@@ -1,30 +1,38 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './Switch.css'
-import * as AppView from '../AppView';
-import { useBind } from '../Utils/ReactBindHook';
-import { Audio } from '../../shared/Audio';
+import { Cover, WaveForm, List, Lyric } from '.';
+import styled from 'styled-components';
+
 
 export class SwitchProps {
     idx?: number
 }
 
+const Root = styled.main`
+display: grid;
+grid-column: 1;
+grid-row: 1;
+z-index: 1;
+max-height: -webkit-fill-available;
+height: 100%
+`;
+
 export const Switch: React.FC<SwitchProps> = (props) => {
     const idx = (props.idx !== undefined ? props.idx : 0)
     return (
-        <div id="root" className="switch container">
+        <Root>
             {idx == 0 &&
-                <AppView.Cover></AppView.Cover >
+                <Cover></Cover >
             }
             {idx == 1 &&
-                <AppView.WaveForm></AppView.WaveForm>
+                <WaveForm></WaveForm>
             }
             {idx == 2 &&
-                <AppView.List></AppView.List>
+                <List></List>
             }
             {idx == 3 &&
-                <AppView.Lyric></AppView.Lyric>
+                <Lyric></Lyric>
             }
-        </div>
+        </Root>
     )
 }

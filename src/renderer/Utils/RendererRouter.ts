@@ -1,6 +1,5 @@
-import { IpcRenderer, IpcRendererEvent, ipcRenderer } from 'electron'
-import { Message, ReturnableCommand, Command } from '../AppIpc';
-import { HostMailbox } from '../AppHost';
+import { IpcRenderer, ipcRenderer } from 'electron'
+import { Message, HostMailbox, Command, ReturnableCommand } from '../../shared/AppIpc';
 
 export type ActionCallback = (req: string, data: any) => void;
 
@@ -39,7 +38,7 @@ export class RendererRouter {
                 return
             }
             const ret = msg.commands.map(cmd => {
-                const retCmd = new ReturnableCommand(cmd)
+                const retCmd = cmd as ReturnableCommand
                 if (this.hostMailBoxs[msg.receiverHost].commandGotSync.invokable)
                     this.hostMailBoxs[msg.receiverHost].commandGotSync.invoke(this, retCmd)
                 return new Command("sync", "return", retCmd.return)
@@ -74,7 +73,7 @@ export class RendererRouter {
     public registerHost(mailBox: HostMailbox) {
         this.hostMailBoxs[mailBox.hostName] = mailBox
     }
-    
+
     public close() {
         this.hostMailBoxs = null
         this.ipc.removeAllListeners(this.channel)

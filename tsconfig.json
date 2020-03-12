@@ -6,12 +6,17 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
-        "outDir": "dist"
+        "outDir": "dist",
+        "skipLibCheck": true,
+		"allowSyntheticDefaultImports": true,
     },
     "include": [
         "src/main/*",
         "src/main/**/*",
         "src/shared/*",
-        "src/shared/**/*"
+        "src/shared/**/*",
     ],
+    "exclude": [
+        "node_modules"
+    ]
 }

@@ -61,7 +61,7 @@ export class EventHandler<TEventArgs> implements IEventHandler<TEventArgs>{
 export class EventEmitter2HandlerWrapper<TEventArgs> implements IEventHandler<TEventArgs>{
     private emitter: NodeJS.EventEmitter
     private event: string
-    private callbackMap: { [id: number]: [(sender: any, args: TEventArgs) => void, (...args: any[]) => void] }
+    private callbackMap: { [id: string]: [(sender: any, args: TEventArgs) => void, (...args: any[]) => void] }
     private idPool: IdPool
     public constructor(event: string, emitter: App) {
         this.emitter = emitter
@@ -101,8 +101,7 @@ export class EventEmitter2HandlerWrapper<TEventArgs> implements IEventHandler<TE
     }
 
     public remove(callback: (sender: any, args: TEventArgs) => void): void {
-        Object.keys(this.callbackMap).forEach(idx=>{
-            const id = idx as unknown as number
+        Object.keys(this.callbackMap).forEach(id=>{
             if(this.callbackMap[id][0]==callback){
                 this.emitter.removeListener(this.event, this.callbackMap[id][1])
                 delete this.callbackMap[id]

@@ -1,14 +1,13 @@
 // import from npm module
-import { app, ipcMain, Menu, BrowserWindow } from 'electron'
+import { app, App, ipcMain, Menu, BrowserWindow } from 'electron'
 import * as os from 'os'
 import * as path from 'path'
 
+
 // import from src
-import * as AppSess from "./AppSess"
-import * as App from "./App"
-import * as AppHost from "./AppHost"
 import * as commandLineArgs from 'command-line-args'
-import { optionDefinitions, Option } from './App'
+import { optionDefinitions, Option, MainRouter, Info, StatusHost, Commands, MenuHost } from './App'
+import { SessionCenter } from './AppSession'
 
 
 const argv = process.argv
@@ -24,12 +23,12 @@ if (!gotTheLock) {
 else {
     // Global 介面擴充，以參照重要物件
     type IExGlobal = NodeJS.Global & {
-        mainRouter: App.MainRouter,
-        info: App.Info,
-        statusHost: AppHost.StatusHost,
-        sessionCenter: AppSess.SessionCenter,
-        commands: App.Commands
-        menuHost: AppHost.MenuHost,
+        mainRouter: MainRouter,
+        info: Info,
+        statusHost: StatusHost,
+        sessionCenter: SessionCenter,
+        commands: Commands
+        menuHost: MenuHost,
         option: Option
     }
 
@@ -38,19 +37,19 @@ else {
 
     g.option = option
 
-    g.mainRouter = new App.MainRouter("main", ipcMain)
+    g.mainRouter = new MainRouter("main", ipcMain)
 
-    g.info = new App.Info(app)
+    g.info = new Info(app)
 
-    g.statusHost = new AppHost.StatusHost(app)
+    g.statusHost = new StatusHost(app)
 
     g.mainRouter.registerHost(g.statusHost.mailBox)
 
-    g.sessionCenter = new AppSess.SessionCenter(ipcMain, g.statusHost);
+    g.sessionCenter = new SessionCenter(ipcMain, g.statusHost);
 
-    g.commands = new App.Commands(g.info, g.sessionCenter)
+    g.commands = new Commands(g.info, g.sessionCenter)
 
-    g.menuHost = new AppHost.MenuHost(g.info, g.commands, g.sessionCenter)
+    g.menuHost = new MenuHost(g.info, g.commands, g.sessionCenter)
 
     g.mainRouter.registerHost(g.menuHost.mailBox)
 

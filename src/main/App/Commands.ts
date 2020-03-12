@@ -1,10 +1,9 @@
 import * as AppFactory from "../AppFactory";
 import * as App from "../App";
-import * as AppSess from "../AppSess";
-import { Message, Command } from "../AppIpc";
-import { Audio } from "../../shared/Audio";
-import { Toast, EToastIcon } from "../../shared/Toast";
-import { StatusHost } from "./StatusHost";
+import * as AppSess from "../AppSession";
+import { Message, Command } from "../../shared/AppIpc";
+import { Audio, EPlayback } from "../../shared/Audio";
+import { Toast } from "../../shared/Toast";
 
 export type ICommand<T> = (args: T) => void
 
@@ -29,16 +28,10 @@ export class Commands {
                             new Command("update", "current", audio)
                         )
                     )
-                    sess.router.sendSync("renderer",
-                        new Message("cmds", "toast",
-                            new Command("drop", "toast", new Toast(1000, -1, ` Loading...`, EToastIcon.Loading))
-                        )
-                    ).then((id) => {
-                        sess.sessStatusHost.audioLoaded.doOnce(() => {
-                            sess.router.send("renderer", new Message("cmds", "toast",
-                                new Command("cancel", "toast", id[0].data)
-                            ))
-                        })
+                    sess.sessStatusHost.audioLoaded.doOnce(() => {
+                        sess.router.send("renderer", new Message("cmds", "audio",
+                            new Command("update", "playback", EPlayback.playing)
+                        ))
                     })
                 }
                 sess.router.send("renderer",
@@ -68,16 +61,10 @@ export class Commands {
                             new Command("update", "current", audio)
                         )
                     )
-                    sess.router.sendSync("renderer",
-                        new Message("cmds", "toast",
-                            new Command("drop", "toast", new Toast(1000, -1, ` Loading...`, EToastIcon.Loading))
-                        )
-                    ).then((id) => {
-                        sess.sessStatusHost.audioLoaded.doOnce(() => {
-                            sess.router.send("renderer", new Message("cmds", "toast",
-                                new Command("cancel", "toast", id[0].data)
-                            ))
-                        })
+                    sess.sessStatusHost.audioLoaded.doOnce(() => {
+                        sess.router.send("renderer", new Message("cmds", "audio",
+                            new Command("update", "playback", EPlayback.playing)
+                        ))
                     })
                 }
                 sess.router.send("renderer",
@@ -92,6 +79,7 @@ export class Commands {
             return
         }
     }
+
 
     public sendNotifyToast: ICommand<{ message: string, sess: AppSess.Session }> = async (args) => {
         let sess = this.sessCenter.lastFocusSess;

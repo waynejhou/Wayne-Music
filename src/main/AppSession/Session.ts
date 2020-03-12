@@ -1,27 +1,25 @@
 import { BrowserWindow, App as ElectronApp, LoadFileOptions, IpcMain } from "electron";
 
-import * as App from "../App"
-import * as AppIpc from "../AppIpc";
-import * as AppHost from "../AppHost"
-import * as AppSess from "../AppSess"
+import { MainRouter, Commands, StatusHost as AppStatusHost } from "../App"
+import { StatusHost as SessStatusHost } from "../AppSession/StatusHost"
 
 export class Session {
     public name: string = null;
-    private appStatusHost: AppHost.StatusHost = null;
-    public sessStatusHost: AppSess.StatusHost = null;
-    public router: App.MainRouter = null;
+    private appStatusHost: AppStatusHost = null;
+    public sessStatusHost: SessStatusHost = null;
+    public router: MainRouter = null;
     public rendererWindow: BrowserWindow = null;
     public constructor(
         name: string,
         ipcMain: IpcMain,
-        statusHost: AppHost.StatusHost,
-        cmds: App.Commands,
+        statusHost: AppStatusHost,
+        cmds: Commands,
         useDevServer: boolean = false,
         openDevTool: boolean = false
     ) {
         this.name = name;
         this.appStatusHost = statusHost
-        this.router = new App.MainRouter(this.name, ipcMain)
+        this.router = new MainRouter(this.name, ipcMain)
         this.rendererWindow = new BrowserWindow({
             width: 900,
             height: 900,
@@ -37,7 +35,7 @@ export class Session {
 
         this.router.registerProcess("renderer", this.rendererWindow)
 
-        this.sessStatusHost = new AppSess.StatusHost()
+        this.sessStatusHost = new SessStatusHost()
         this.router.registerHost(this.sessStatusHost.mailBox)
         this.sessStatusHost.audioLoaded.do((sender, audio) => {
             cmds.loadLyric({ sess: this, audio: audio })

@@ -1,27 +1,28 @@
 export class IdPool {
-
+    private usingIds: string[]
+    private idleIds: string[]
     public constructor() {
         this.usingIds = []
         this.idleIds = []
     }
     public genId() {
-        if (this.idleIds.length > 0) return this.idleIds.pop()
-        const ret = this.usingIds.length
-        this.usingIds.push(ret)
-        return ret;
+        let retId: string
+        if (this.idleIds.length > 0) retId = `${this.idleIds.pop()}`
+        retId = `${this.usingIds.length}`
+        this.usingIds.push(retId)
+        return retId;
     }
-    public disposeId(id: number) {
+    public disposeId(id: string) {
         let found = this.usingIds.findIndex((v) => v == id)
-        if(found>=0){
-            this.usingIds.splice(found,1)
+        if (found >= 0) {
+            this.usingIds.splice(found, 1)
             this.idleIds.push(id)
         }
     }
 
-    public dispose(){
+    public dispose() {
         this.usingIds = []
         this.idleIds = []
     }
-    private usingIds: number[]
-    private idleIds: number[]
+
 }

@@ -1,4 +1,4 @@
-import { IHost, HostMailbox } from "../AppHost"
+import { IHost, HostMailbox } from "../../shared/AppIpc"
 import { BaseViewModel } from "./BaseViewModel";
 import { Toast } from "../../shared/Toast"
 import { IdPool } from "../../shared/IdPool";
@@ -19,8 +19,8 @@ export class ToastViewModel extends BaseViewModel implements IHost {
             }
         })
         this.mailBox.commandGotSync.do((sender, args) => {
-            if (args.command.action == "drop") {
-                args.return = this.dropToast(args.command.data)
+            if (args.action == "drop") {
+                args.return = this.dropToast(args.data)
             }
         })
         this._showingToasts = {}
@@ -32,7 +32,7 @@ export class ToastViewModel extends BaseViewModel implements IHost {
             this._showingToasts[toast.id] = toast
             this.notifyPropChange("showingToasts")
         }, toast.delay)
-        let leaveTimeout: NodeJS.Timeout
+        let leaveTimeout: number
         if (toast.duration > 0) {
             leaveTimeout = setTimeout(() => {
                 delete this._showingToasts[toast.id]
@@ -43,7 +43,7 @@ export class ToastViewModel extends BaseViewModel implements IHost {
         this.timeouts[toast.id] = [enterTimeout, leaveTimeout]
         return toast.id
     }
-    public cancelToast(id: number) {
+    public cancelToast(id: string) {
         clearTimeout(this.timeouts[id][0])
         clearTimeout(this.timeouts[id][1])
         delete this._showingToasts[id]

@@ -1,16 +1,14 @@
 import { IpcMain } from "electron";
-
-import * as App from "../App"
-import * as AppSess from "../AppSess"
-import * as AppHost from "../AppHost"
+import { Session } from "./Session";
+import { Info, StatusHost, Commands, Option } from "../App";
 
 export class SessionCenter {
-    private sessSet: { [name: string]: AppSess.Session }
+    private sessSet: { [name: string]: Session }
     private lastFocusSessName: string
-    private info: App.Info;
-    private statusHost: AppHost.StatusHost
+    private info: Info;
+    private statusHost: StatusHost
     private ipcMain: IpcMain
-    public constructor(ipcMain: IpcMain, statusHost: AppHost.StatusHost) {
+    public constructor(ipcMain: IpcMain, statusHost: StatusHost) {
         this.lastFocusSessName = null;
         this.sessSet = {};
         this.statusHost = statusHost
@@ -44,9 +42,9 @@ export class SessionCenter {
         return null;
     }
 
-    public createSession(cmds:App.Commands, option:App.Option, info:App.Info) {
+    public createSession(cmds:Commands, option:Option, info:Info) {
         const sessName = `session_${this.length}`
-        const sess = new AppSess.Session(
+        const sess = new Session(
             sessName,
             this.ipcMain,
             this.statusHost,

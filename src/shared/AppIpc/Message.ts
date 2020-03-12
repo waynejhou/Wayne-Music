@@ -1,5 +1,4 @@
 
-
 /**
  * App Inter-Process-Communication Command Data Structure
  */
@@ -16,13 +15,7 @@ export class Command {
     }
 }
 
-export class ReturnableCommand {
-    public command: Command
-    public return: any
-    public constructor(command: Command) {
-        this.command = command
-    }
-}
+export type ReturnableCommand = Command & {return:any}
 
 /**
  * App Inter-Process-Communication Message Data Structure
@@ -42,10 +35,4 @@ export class Message {
     }
 }
 
-export class ReturnableMessage {
-    public message: Message
-    public return: any
-    public constructor(message: Message) {
-        this.message = message
-    }
-}
+export type ReturnableMessage = Message & {return:any}

@@ -1,4 +1,4 @@
-import { INotifyPropChanged, PropertyChangedEventArgs } from "../../shared/INotifyPropChanged"
+import { INotifyPropChanged, PropertyChangedEventArgs } from "."
 import { IEventHandler, EventHandler } from "../../shared/EventHandler"
 
 export class BaseViewModel implements INotifyPropChanged {
