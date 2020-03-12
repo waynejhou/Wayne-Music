@@ -104,10 +104,7 @@ export const List: React.FC<ListProps> = (props) => {
                         if (selected.length > 0) setSelectedPic(list[selected[0]].picture)
                     }}
                     onItemDoubleClick={(selected) => {
-                        console.log(selected)
-                        if (selected.length > 0){
-                            w.audioVM.setCurrentAndPlay(list[selected[0]])
-                        }
+                        w.audioVM.setCurrentAndPlay(list[selected])
                     }}
                 >
                 </HawkrivesAudioList>
@@ -143,7 +140,7 @@ export class HawkrivesAudioListPorps {
     selected: Array<number>
     allowMultiple: boolean
     onChange: (changedItem: Array<number>) => any
-    onItemDoubleClick: (changedItem: Array<number>) => any
+    onItemDoubleClick: (changedItem: number) => any
     keyboardEvents: boolean
     static readonly default: HawkrivesAudioListPorps = {
         items: [],
@@ -222,7 +219,7 @@ export const HawkrivesAudioList: React.FC<HawkrivesAudioListPorps> = (props) => 
         } else if (allowMultiple && enableMultiple) {
             setSelectedItems(reject(selectedItems, idx => idx === index))
         } else {
-            setSelectedItems([index])
+            setSelectedItems([])
         }
         setLastSelected([index])
     }
@@ -279,7 +276,7 @@ export const HawkrivesAudioList: React.FC<HawkrivesAudioListPorps> = (props) => 
         console.log(args)
         if (!includes(selectedItems, index)) {
             select({ index, enableContiguous, enableMultiple })
-        } else if (props.allowMultiple) {
+        } else {
             deselect({ index, enableContiguous, enableMultiple })
         }
     }
@@ -321,7 +318,7 @@ export const HawkrivesAudioList: React.FC<HawkrivesAudioListPorps> = (props) => 
                         className={classes}
                         onMouseOver={(ev) => { focusIndex(index) }}
                         onClick={(ev) => { toggleMouseSelect({ event: ev, index: index }) }}
-                        onDoubleClick={(ev) => { if (props.onItemDoubleClick) props.onItemDoubleClick(selectedItems) }}
+                        onDoubleClick={(ev) => { if (props.onItemDoubleClick) props.onItemDoubleClick(index) }}
                     >
                         <AudioProperty>{index + 1}.</AudioProperty>
                         <AudioProperty style={{width:"25px"}}>

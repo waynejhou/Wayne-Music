@@ -34,7 +34,7 @@ export class AudioModel {
         this._playback = EPlayback.stopped
         this._loop = false
         this._list = []
-        this._volume = 0.15
+        this._volume = 0.05
         this._lyric = null;
         this._state = EAudioModelState.idle
         this.audioLoaded = new EventHandler()
@@ -83,7 +83,7 @@ export class AudioModel {
         console.log(value.url)
         this.howl = new Howl({
             src: [value.url],
-            volume: this.volume,
+            volume: this._volume,
             loop: this.loop,
         })
         this.analyser = Howler.ctx.createAnalyser()
@@ -161,11 +161,11 @@ export class AudioModel {
     }
 
     public get volume() {
-        if (this.howl && this.state == EAudioModelState.idle) return this.howl.volume()*2;
-        return this._volume*2;
+        if (this.howl && this.state == EAudioModelState.idle) return max(0, min(1, this.howl.volume()*4));
+        return max(0, min(1, this._volume*4));
     }
     public set volume(value) {
-        let val = max(0, min(1, value))/2
+        let val = max(0, min(1, value))/4
         this._volume = val;
         if (this.howl && this.state == EAudioModelState.idle) this.howl.volume(val);
     }
