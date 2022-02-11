@@ -27,6 +27,7 @@ export class Session {
             minHeight: 800,
             webPreferences: {
                 nodeIntegration: true,
+                contextIsolation:false,
                 webSecurity: false,
                 devTools: openDevTool
             }

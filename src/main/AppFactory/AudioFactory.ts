@@ -60,11 +60,11 @@ export class AudioFactory {
     public openAudioDialog(win: BrowserWindow = null) {
         return dialog.showOpenDialog(win, {
             filters: <FileFilter[]>[{
-                name: 'Audio',
-                extensions: ['flac', 'mp3'],
+                name: 'Audio Files',
+                extensions: ['flac', 'mp3', 'm4a', 'ogg'],
             }],
             title: "Open Audio",
-            properties: ["multiSelections"],
+            properties: ["openFile", "multiSelections"],
         })
     }
 

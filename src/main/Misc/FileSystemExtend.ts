@@ -41,7 +41,7 @@ export function ensureDirPathAvailable(dirPath: string) {
  * @param filePath 檔案路徑
  */
 export function ensureFilePathAvailable(filePath: string) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
         try {
             const stat = await fs.promises.stat(filePath)
             if (stat.isFile())
