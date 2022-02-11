@@ -82,10 +82,10 @@ else {
                 g.commands.openAudioByPaths({ paths: paths, sess: null })
             }
             
-            g.commands.openAudioByPaths({
-                paths:[
-                    "",
-                ], sess:null})
+            // g.commands.openAudioByPaths({
+            //     paths:[
+            //         "",
+            //     ], sess:null})
         })
 
     g.statusHost.electronSecondInstance.do(
