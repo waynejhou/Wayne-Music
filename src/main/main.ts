@@ -22,7 +22,7 @@ if (!gotTheLock) {
 }
 else {
     // Global 介面擴充，以參照重要物件
-    type IExGlobal = NodeJS.Global & {
+    type IExGlobal = Global & {
         mainRouter: MainRouter,
         info: Info,
         statusHost: StatusHost,
@@ -33,7 +33,7 @@ else {
     }
 
     // cast global to interface inorder to save references
-    const g = <IExGlobal>global
+    const g = <IExGlobal><unknown>global
 
     g.option = option
 
@@ -59,7 +59,8 @@ else {
         (sender, launchInfo) => {
             if (g.option.useDevServer) {
                 const react_dev_tool_path = path.join(os.homedir(), "AppData/Local", "Google/Chrome/User Data/Profile 1/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.4.0_0")
-                BrowserWindow.addDevToolsExtension(react_dev_tool_path)
+                // BrowserWindow.addDevToolsExtension(react_dev_tool_path)
+                
             }
             g.sessionCenter.createSession(g.commands, g.option, g.info)
         })
@@ -80,11 +81,11 @@ else {
             if (paths && paths.length > 0) {
                 g.commands.openAudioByPaths({ paths: paths, sess: null })
             }
-            /*g.commands.openAudioByPaths({
+            
+            g.commands.openAudioByPaths({
                 paths:[
-                    "D:\\D.flac",
-                    "D:\\audio.flac",
-                ], sess:null})*/
+                    "",
+                ], sess:null})
         })
 
     g.statusHost.electronSecondInstance.do(
